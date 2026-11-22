@@ -3,1635 +3,1224 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>TAIPEI QUEST 🚆 永康 ➔ 台北 | Hành Trình Đài Bắc</title>
+  <title>Taiwan Transport Guide</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Plus Jakarta Sans, Be Vietnam Pro, Noto Sans TC -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            skyPrimary: '#4BB4F8',
-            skySoft: '#EEF7FF',
-            skyBorder: '#D8EDFF',
-            mintPrimary: '#46CBBF',
-            mintDark: '#239B8E',
-            mintSoft: '#EAFBF8',
-            goldPrimary: '#F8B53B',
-            goldDark: '#D18B14',
-            goldSoft: '#FFF8EB',
-            lavenderPrimary: '#7B84CE',
-            lavenderSoft: '#F1F2FC',
-            peachPrimary: '#F48973',
-            peachSoft: '#FEF0EC',
-            inkNavy: '#2C374E',
-            inkMuted: '#7888A1',
-            surfaceBg: '#F6FAFE'
-          },
-          fontFamily: {
-            sans: ['"Be Vietnam Pro"', '"Plus Jakarta Sans"', '"Noto Sans TC"', 'sans-serif'],
-            display: ['"Plus Jakarta Sans"', '"Be Vietnam Pro"', 'sans-serif'],
-            tc: ['"Noto Sans TC"', 'sans-serif']
-          },
-          boxShadow: {
-            card: '0 10px 28px -8px rgba(75, 180, 248, 0.11)',
-            soft: '0 3px 12px -3px rgba(44, 55, 78, 0.04)',
-            nav: '0 -4px 22px -6px rgba(75, 180, 248, 0.08)'
-          }
-        }
-      }
-    }
-  </script>
-
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Noto+Sans+TC:wght@500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     body {
-      background-color: #F5F9FC;
-      color: #2C374E;
+      font-family: 'Plus Jakarta Sans', 'Be Vietnam Pro', 'Noto Sans TC', sans-serif;
+      background-color: #EDF6FC;
+      color: #222B3A;
       -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
     }
-
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
+    .soft-card {
+      background-color: #FFFFFF;
+      border-radius: 28px;
     }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+    .speech-btn {
+      background-color: #EEF0FA;
+      transition: background-color 0.2s ease, transform 0.1s ease;
     }
-
-    /* 2-second luminous mint visual confirmation when speech button is pressed */
-    .speech-btn-active {
-      background-color: #46CBBF !important;
-      color: #FFFFFF !important;
-      transform: scale(0.97);
+    .speech-btn:active {
+      transform: scale(0.98);
     }
-    .speech-btn-active svg,
-    .speech-btn-active span {
-      color: #FFFFFF !important;
+    .tts-active {
+      background-color: #E7F8F7 !important;
+      color: #2D9C98 !important;
     }
-
-    @keyframes floatBob {
+    .card-active {
+      border: 1.5px solid #3FB6F6;
+    }
+    .card-done {
+      opacity: 0.85;
+    }
+    @keyframes floatTrain {
       0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-3px); }
+      50% { transform: translateY(-2px); }
     }
-    .animate-float {
-      animation: floatBob 2.2s ease-in-out infinite;
-    }
-
-    @keyframes xpPop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.16); }
-      100% { transform: scale(1); }
-    }
-    .animate-xp {
-      animation: xpPop 0.35s ease-out;
-    }
-
-    @keyframes confettiFall {
-      0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
-    }
-    .confetti-piece {
-      position: fixed;
-      top: 0;
-      z-index: 60;
-      pointer-events: none;
-      animation: confettiFall linear forwards;
+    .train-float {
+      animation: floatTrain 2.2s ease-in-out infinite;
     }
   </style>
 </head>
-<body class="min-h-screen font-sans antialiased selection:bg-skySoft">
+<body class="min-h-screen pb-28 select-none">
 
-  <!-- Toast Feedback Banner -->
-  <div id="toastBox" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 -translate-y-2 transition-all duration-300">
-    <div class="bg-inkNavy/90 backdrop-blur-xs text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 whitespace-nowrap">
-      <span id="toastText">✓</span>
-    </div>
+  <!-- Non-blocking Toast Banner -->
+  <div id="toastBanner" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden max-w-[90vw] bg-[#222B3A] text-white text-xs font-bold px-4 py-2.5 rounded-full text-center">
+    <span id="toastText"></span>
   </div>
 
-  <!-- Centered Mobile Container -->
-  <div class="max-w-md mx-auto min-h-screen flex flex-col justify-between pb-28 relative">
+  <!-- Main Container -->
+  <div class="max-w-md mx-auto px-4 pt-4 space-y-3.5">
 
-    <!-- ================= LIGHT AIRY HEADER ================= -->
-    <header class="px-5 pt-4 pb-3 sticky top-0 z-30 bg-[#F5F9FC]/90 backdrop-blur-md space-y-2.5">
+    <!-- Top Sticky Header -->
+    <header class="sticky top-0 z-30 bg-[#EDF6FC]/95 backdrop-blur-sm pt-1 pb-2 space-y-2.5">
       <div class="flex items-center justify-between gap-2">
-        <!-- Traveler Avatar & Level -->
-        <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-10 h-10 rounded-full bg-white p-0.5 shadow-soft shrink-0 flex items-center justify-center">
-            <svg viewBox="0 0 64 64" class="w-full h-full rounded-full">
-              <circle cx="32" cy="32" r="32" fill="#FDE2DA"/>
-              <circle cx="32" cy="54" r="18" fill="#5CC0FF"/>
-              <circle cx="32" cy="27" r="11" fill="#FCD9CE"/>
-              <path d="M21 25 C21 15, 43 15, 43 25 C39 20, 25 20, 21 25 Z" fill="#2C374E"/>
-              <circle cx="28" cy="27" r="1.5" fill="#2C374E"/>
-              <circle cx="36" cy="27" r="1.5" fill="#2C374E"/>
-              <path d="M29 31.5 Q32 34.5 35 31.5" fill="none" stroke="#2C374E" stroke-width="1.8" stroke-linecap="round"/>
+        <!-- Left: Avatar + LV.1 + Route -->
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-10 h-10 rounded-full bg-[#FAD2C5] flex items-center justify-center shrink-0 overflow-hidden">
+            <svg class="w-8 h-8" viewBox="0 0 36 36" fill="none">
+              <circle cx="18" cy="14" r="6.5" fill="#FDE6D8"/>
+              <path d="M11.5 13C11.5 9.2 14.4 6.8 18 6.8C21.6 6.8 24.5 9.2 24.5 13C23 11.4 20.8 10.6 18 10.6C15.2 10.6 13 11.4 11.5 13Z" fill="#222B3A"/>
+              <circle cx="15.8" cy="14.2" r="0.9" fill="#222B3A"/>
+              <circle cx="20.2" cy="14.2" r="0.9" fill="#222B3A"/>
+              <path d="M16.4 16.8C17 17.5 19 17.5 19.6 16.8" stroke="#222B3A" stroke-width="1.3" stroke-linecap="round"/>
+              <path d="M9.5 31C9.5 25.8 13.3 22.5 18 22.5C22.7 22.5 26.5 25.8 26.5 31" fill="#3FB6F6"/>
             </svg>
           </div>
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5">
-              <span id="playerLevelBadge" class="bg-skyPrimary text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0">LV.1</span>
-              <h1 class="text-sm font-extrabold text-inkNavy tracking-tight whitespace-nowrap">
-                永康 <span class="text-skyPrimary font-bold">➔</span> 台北
-              </h1>
-            </div>
-          </div>
+          <span class="bg-[#3FB6F6] text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full shrink-0">LV.1</span>
+          <h1 id="headerRouteTitle" class="text-[15px] font-extrabold text-[#222B3A] whitespace-nowrap">永康 ➔ 台北</h1>
         </div>
 
-        <!-- XP Counter & Language Switcher -->
+        <!-- Right: XP Pill + Language Toggle -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <button onclick="resetAllProgress()" title="Reset XP" id="xpBadge" class="h-8 px-2.5 rounded-full bg-white/90 shadow-soft flex items-center gap-1 text-xs font-extrabold text-inkNavy active:scale-95 transition">
-            <svg class="w-3.5 h-3.5 text-goldPrimary shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"/></svg>
+          <button onclick="promptResetProgress()" class="bg-white text-[#222B3A] text-xs font-extrabold px-2.5 py-1.5 rounded-full flex items-center gap-1 active:scale-95 transition-transform">
+            <span class="text-[#F4A938]">★</span>
             <span id="xpValue">0</span>
-            <svg class="w-3 h-3 text-inkMuted ml-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span class="text-slate-400 text-sm leading-none ml-0.5">↻</span>
           </button>
-
-          <button id="langToggleBtn" onclick="toggleLanguage()" class="h-8 px-2.5 rounded-full bg-white/90 shadow-soft flex items-center gap-1 text-xs font-extrabold text-inkNavy active:scale-95 transition">
+          <button onclick="toggleLanguage()" class="bg-white text-[#222B3A] text-xs font-extrabold px-2.5 py-1.5 rounded-full flex items-center gap-1 active:scale-95 transition-transform">
             <span id="langFlag">🇻🇳</span>
-            <span id="langLabel">VI</span>
+            <span id="langCode">VI</span>
           </button>
         </div>
       </div>
 
-      <!-- Family Sync & Notification Pill -->
-      <div class="flex items-center justify-between gap-2 bg-white/75 backdrop-blur-xs px-3.5 py-1.5 rounded-full shadow-soft">
+      <!-- Room Sync Bar -->
+      <div class="bg-white rounded-2xl px-3.5 py-2 flex items-center justify-between gap-2">
         <div class="flex items-center gap-2 min-w-0">
-          <span class="w-2 h-2 rounded-full bg-mintPrimary animate-pulse shrink-0"></span>
-          <button onclick="toggleRoomInput()" id="roomCodeBadge" class="text-[11px] font-bold text-inkMuted hover:text-skyPrimary transition">
-            #000000
-          </button>
-          <button onclick="copySyncLink()" class="px-2.5 py-0.5 rounded-full bg-skySoft text-skyPrimary text-[10.5px] font-bold flex items-center gap-1 active:scale-95 transition">
-            <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            <span data-i18n="btnCopyLink">Gửi link</span>
+          <span id="syncDot" class="w-2.5 h-2.5 rounded-full bg-[#4AC7C3] shrink-0"></span>
+          <button onclick="openRoomCodeModal()" id="roomCodeLabel" class="text-xs font-extrabold text-slate-600 truncate">#521733</button>
+          <button onclick="copyShareLink()" class="bg-[#E9F6FE] text-[#1D9CE0] text-[11px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0 active:scale-95 transition-transform">
+            <span>🔗</span>
+            <span id="copyLinkLabel">Gửi link</span>
           </button>
         </div>
-
-        <button onclick="enableNotifications()" id="notifyToggleBtn" class="px-2.5 py-0.5 rounded-full bg-skyPrimary text-white text-[10.5px] font-bold flex items-center gap-1 shrink-0 active:scale-95 transition">
-          <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <span id="notifyBtnText" data-i18n="btnEnableNotify">Báo chuông</span>
-        </button>
-      </div>
-
-      <!-- Optional Manual Room Code Input -->
-      <div id="roomInputBox" class="hidden pt-1 flex items-center gap-2">
-        <input id="manualRoomInput" type="text" inputmode="numeric" maxlength="6" placeholder="000000" class="flex-1 bg-white border border-skyBorder rounded-full px-3.5 py-1.5 text-xs font-bold text-inkNavy focus:outline-none focus:border-skyPrimary" />
-        <button onclick="applyManualRoom()" class="px-4 py-1.5 rounded-full bg-skyPrimary text-white text-xs font-bold active:scale-95 transition">
-          OK
+        <button id="notifyBtn" onclick="toggleNotifications()" class="bg-[#3FB6F6] text-white text-[11px] font-extrabold px-3 py-1.5 rounded-full flex items-center gap-1 shrink-0 active:scale-95 transition-transform">
+          <span>🔔</span>
+          <span id="notifyLabel">Báo chuông</span>
         </button>
       </div>
     </header>
 
-    <!-- ================= MAIN CONTENT AREA ================= -->
-    <main class="px-5 pt-2 space-y-4 flex-1">
-
-      <!-- ================= TAB 1: JOURNEY QUEST MAP ================= -->
-      <section id="tab-route" class="space-y-4">
-
-        <!-- 4-Checkpoint Progress Card -->
-        <div class="bg-white/95 rounded-[26px] p-4 shadow-card border border-white">
-          <div class="relative pt-1 pb-1">
-            <!-- Connector Track aligned precisely from center of Col 1 to center of Col 4 -->
-            <div class="absolute top-[41px] left-[12.5%] right-[12.5%] h-1.5 bg-[#EDF5FD] rounded-full overflow-hidden">
-              <div id="progressBar" class="h-full bg-mintPrimary transition-all duration-500 rounded-full" style="width: 0%"></div>
-            </div>
-
-            <div class="grid grid-cols-4 gap-1 text-center relative z-10">
-              <!-- Checkpoint 1 -->
-              <button onclick="toggleStep(1)" class="flex flex-col items-center gap-1 group active:scale-95 transition">
-                <span id="heroMarker-1" class="text-skyPrimary animate-float h-4 flex items-center justify-center">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h.01"/><path d="M16 15h.01"/></svg>
-                </span>
-                <div id="stepCircle-1" class="w-10 h-10 rounded-full bg-skyPrimary text-white flex items-center justify-center font-display font-bold text-sm transition-all">
-                  <span id="stepNum-1">1</span>
-                </div>
-                <span class="text-[11px] font-bold text-inkNavy leading-tight mt-0.5">永康<br><span class="text-inkMuted font-medium text-[9.5px]">Yongkang</span></span>
-              </button>
-
-              <!-- Checkpoint 2 -->
-              <button onclick="toggleStep(2)" class="flex flex-col items-center gap-1 group active:scale-95 transition">
-                <span id="heroMarker-2" class="text-mintPrimary animate-float h-4 flex items-center justify-center invisible">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="m13 7-2 5 4 3v6"/><path d="m11 12-3 5-3 1"/><path d="m13 7 4 3 3-1"/></svg>
-                </span>
-                <div id="stepCircle-2" class="w-10 h-10 rounded-full bg-skySoft text-inkMuted flex items-center justify-center font-display font-bold text-sm transition-all">
-                  <span id="stepNum-2">2</span>
-                </div>
-                <span class="text-[11px] font-bold text-inkNavy leading-tight mt-0.5">沙崙<br><span class="text-inkMuted font-medium text-[9.5px]">Shalun</span></span>
-              </button>
-
-              <!-- Checkpoint 3 -->
-              <button onclick="toggleStep(3)" class="flex flex-col items-center gap-1 group active:scale-95 transition">
-                <span id="heroMarker-3" class="text-goldPrimary animate-float h-4 flex items-center justify-center invisible">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3.1V7a4 4 0 0 0 8 0V3.1"/><path d="m9 15-1-1"/><path d="m15 15 1-1"/><path d="M9 19c-2.8 0-5-2.2-5-5v-4a8 8 0 0 1 16 0v4c0 2.8-2.2 5-5 5Z"/><path d="m8 19-2 3"/><path d="m16 19 2 3"/></svg>
-                </span>
-                <div id="stepCircle-3" class="w-10 h-10 rounded-full bg-skySoft text-inkMuted flex items-center justify-center font-display font-bold text-sm transition-all">
-                  <span id="stepNum-3">3</span>
-                </div>
-                <span class="text-[11px] font-bold text-inkNavy leading-tight mt-0.5">高鐵台南<br><span class="text-inkMuted font-medium text-[9.5px]">THSR</span></span>
-              </button>
-
-              <!-- Checkpoint 4 -->
-              <button onclick="toggleStep(4)" class="flex flex-col items-center gap-1 group active:scale-95 transition">
-                <span id="heroMarker-4" class="text-lavenderPrimary animate-float h-4 flex items-center justify-center invisible">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-                </span>
-                <div id="stepCircle-4" class="w-10 h-10 rounded-full bg-lavenderSoft text-lavenderPrimary flex items-center justify-center font-display font-bold text-sm transition-all">
-                  <span id="stepNum-4">4</span>
-                </div>
-                <span class="text-[11px] font-bold text-inkNavy leading-tight mt-0.5">台北<br><span class="text-inkMuted font-medium text-[9.5px]">Taipei</span></span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ==================== STAGE 1 CARD (AIRY SKY) ==================== -->
-        <div id="stageCard-1" class="bg-white/95 rounded-[26px] p-4 shadow-card border border-white space-y-3.5 transition-all duration-300">
-          <div class="bg-skySoft rounded-2xl p-3.5 flex items-center justify-between gap-2">
-            <div class="space-y-1.5 min-w-0">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="text-[10px] font-extrabold text-skyPrimary whitespace-nowrap shrink-0">TRA 區間車 / 25m</span>
-                <span data-i18n="s1PlatformBadge" class="text-[10px] font-extrabold text-inkNavy bg-white/90 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">Sân ga 1</span>
-                <span class="text-[10px] font-bold text-skyPrimary bg-white/90 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">+100 XP</span>
-              </div>
-              <h2 class="text-[15px] font-extrabold text-inkNavy whitespace-nowrap">永康 ➔ 沙崙</h2>
-            </div>
-
-            <!-- Flat Vector Train SVG -->
-            <svg viewBox="0 0 80 64" class="w-12 h-10 shrink-0">
-              <rect x="8" y="14" width="64" height="34" rx="10" fill="#5EC2FF"/>
-              <rect x="14" y="20" width="16" height="12" rx="3" fill="#FFFFFF"/>
-              <rect x="34" y="20" width="16" height="12" rx="3" fill="#FFFFFF"/>
-              <rect x="54" y="20" width="12" height="12" rx="3" fill="#FFF8EB"/>
-              <line x1="6" y1="52" x2="74" y2="52" stroke="#7888A1" stroke-width="2.5" stroke-linecap="round"/>
-              <circle cx="22" cy="48" r="4" fill="#2C374E"/>
-              <circle cx="58" cy="48" r="4" fill="#2C374E"/>
-            </svg>
-          </div>
-
-          <div class="space-y-2">
-            <div class="flex items-center gap-2.5 bg-surfaceBg px-3 py-2.5 rounded-2xl">
-              <span class="w-7 h-7 rounded-xl bg-skySoft text-skyPrimary flex items-center justify-center shrink-0">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-              </span>
-              <span data-i18n="s1Mission" class="text-[11.5px] font-bold text-inkNavy whitespace-nowrap">EasyCard / Tàu <b>區間車</b></span>
-            </div>
-
-            <!-- Direct Train & Live Schedule Link -->
-            <a href="https://trctrack.com/station/yongkang?to=shalun" target="_blank" rel="noopener noreferrer" data-i18n="s1DirectLink" class="bg-mintSoft hover:bg-[#DCF6F2] p-3 rounded-2xl flex items-center justify-between gap-2 text-[11.5px] font-bold text-inkNavy active:scale-[0.98] transition">
-              <div class="flex items-center gap-2 min-w-0">
-                <svg class="w-3.5 h-3.5 text-mintDark shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
-                <span class="bg-white text-mintDark px-2 py-0.5 rounded-lg font-extrabold shrink-0">沙崙</span>
-                <span class="truncate">Đi thẳng</span>
-              </div>
-              <span class="bg-mintPrimary text-white px-2.5 py-1 rounded-xl text-[11px] font-extrabold shrink-0 flex items-center gap-1.5">
-                <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span>Giờ tàu</span>
-                <svg class="w-2.5 h-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              </span>
-            </a>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <button onclick="openShowModal('確認直達月台', '不好意思，請問直達『沙崙』的區間車是在第一月台搭車嗎？謝謝！', 'Xin lỗi, cho hỏi tàu địa phương đi thẳng đến Shalun (沙崙) có phải đón ở sân ga số 1 không ạ? Cảm ơn!', this)" class="min-h-[42px] py-2 px-3 bg-lavenderSoft hover:bg-[#E7E9FA] text-inkNavy font-bold rounded-2xl text-[11px] flex items-center justify-between gap-1.5 transition-all">
-              <span data-i18n="btnAskPlatform" class="whitespace-nowrap">Sân ga đi 沙崙</span>
-              <svg class="w-3.5 h-3.5 text-lavenderPrimary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-            </button>
-            <button onclick="openShowModal('確認班次直達', '不好意思，請問這班車有直達『沙崙』嗎？謝謝！', 'Xin lỗi, cho hỏi chuyến tàu này có đi thẳng đến Shalun (沙崙) không ạ? Cảm ơn!', this)" class="min-h-[42px] py-2 px-3 bg-lavenderSoft hover:bg-[#E7E9FA] text-inkNavy font-bold rounded-2xl text-[11px] flex items-center justify-between gap-1.5 transition-all">
-              <span data-i18n="btnAskTransfer" class="whitespace-nowrap">Tàu đi thẳng?</span>
-              <svg class="w-3.5 h-3.5 text-lavenderPrimary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-            </button>
-            <button onclick="openShowModal('刷卡進站', '不好意思，請問悠遊卡在哪裡刷卡進站呢？謝謝！', 'Xin lỗi, cho hỏi quẹt thẻ EasyCard vào ga ở đâu ạ? Cảm ơn!', this)" class="min-h-[42px] py-2 px-3 bg-skySoft hover:bg-[#E2F1FF] text-inkNavy font-bold rounded-2xl text-[11px] flex items-center justify-between gap-1.5 transition-all">
-              <span data-i18n="btnAskSwipe" class="whitespace-nowrap">Quẹt thẻ vào ga</span>
-              <svg class="w-3.5 h-3.5 text-skyPrimary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-            </button>
-            <button onclick="openShowModal('悠遊卡加值', '你好，我想加值悠遊卡 100 元，麻煩你了，謝謝！', 'Xin chào, tôi muốn nạp 100 NTD vào thẻ EasyCard. Làm ơn giúp tôi, cảm ơn!', this)" class="min-h-[42px] py-2 px-3 bg-skySoft hover:bg-[#E2F1FF] text-inkNavy font-bold rounded-2xl text-[11px] flex items-center justify-between gap-1.5 transition-all">
-              <span data-i18n="btnTopup" class="whitespace-nowrap">Nạp tiền 100元</span>
-              <svg class="w-3.5 h-3.5 text-skyPrimary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-            </button>
-          </div>
-
-          <button onclick="toggleStep(1)" id="stageClearBtn-1" class="w-full py-3 rounded-2xl bg-skyPrimary text-white font-bold text-xs flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98] transition">
-            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-            <span data-i18n="btnClearStage1">Đã lên tàu</span>
-          </button>
-        </div>
-
-        <!-- ==================== STAGE 2 CARD (AIRY MINT) ==================== -->
-        <div id="stageCard-2" class="bg-white/95 rounded-[26px] p-4 shadow-card border border-white space-y-3.5 transition-all duration-300">
-          <div class="bg-mintSoft rounded-2xl p-3.5 flex items-center justify-between gap-2">
-            <div class="space-y-1 min-w-0">
-              <div class="flex items-center gap-1.5">
-                <span class="text-[10.5px] font-extrabold text-mintDark">3 min</span>
-                <span class="text-[10px] font-bold text-mintDark bg-white/90 px-2 py-0.5 rounded-full">+100 XP</span>
-              </div>
-              <h2 class="text-[15px] font-extrabold text-inkNavy whitespace-nowrap">沙崙 ➔ 高鐵台南</h2>
-            </div>
-
-            <!-- Flat Walking Connector Illustration -->
-            <svg viewBox="0 0 80 64" class="w-14 h-11 shrink-0">
-              <rect x="10" y="14" width="60" height="22" rx="8" fill="#52D5C9"/>
-              <text x="40" y="29" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="800" font-family="sans-serif">高鐵 THSR</text>
-              <path d="M24 48 L56 48 M48 41 L56 48 L48 55" fill="none" stroke="#7888A1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-
-          <div class="flex items-center gap-2.5 bg-surfaceBg px-3 py-2.5 rounded-2xl">
-            <span class="w-7 h-7 rounded-xl bg-mintSoft text-mintDark flex items-center justify-center shrink-0">
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </span>
-            <span data-i18n="s2Mission" class="text-xs font-bold text-inkNavy whitespace-nowrap">Ra cổng <b>沙崙</b> ➔ <b>高鐵 THSR</b></span>
-          </div>
-
-          <button onclick="openShowModal('轉搭高鐵問路', '你好，不好意思我聽不懂中文，我想搭高鐵去『台北』，請問該怎麼走呢？謝謝你！', 'Xin chào, xin lỗi tôi không biết tiếng Trung, tôi muốn đi tàu cao tốc đến Đài Bắc. Cho hỏi tôi nên đi hướng nào ạ? Cảm ơn bạn!', this)" class="w-full py-3 px-4 rounded-2xl bg-mintSoft hover:bg-[#DCF6F2] text-inkNavy font-bold text-xs flex items-center justify-between transition-all">
-            <span data-i18n="btnAskThsrWalk">Hỏi đường sang 高鐵 THSR đi 台北</span>
-            <span class="w-7 h-7 rounded-full bg-mintPrimary text-white flex items-center justify-center shrink-0">
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-            </span>
-          </button>
-
-          <button onclick="toggleStep(2)" id="stageClearBtn-2" class="w-full py-3 rounded-2xl bg-mintPrimary text-white font-bold text-xs flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98] transition">
-            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-            <span data-i18n="btnClearStage2">Đã tới ga Cao Tốc</span>
-          </button>
-        </div>
-
-        <!-- ==================== STAGE 3 CARD (AIRY SUNBEAM) ==================== -->
-        <div id="stageCard-3" class="bg-white/95 rounded-[26px] p-4 shadow-card border border-white space-y-3.5 transition-all duration-300">
-          <div class="bg-goldSoft rounded-2xl p-3.5 flex items-center justify-between gap-2">
-            <div class="space-y-1">
-              <div class="flex items-center gap-1.5">
-                <span class="text-[10.5px] font-extrabold text-goldDark">THSR / 1h 45m</span>
-                <span class="text-[10px] font-bold text-goldDark bg-white/90 px-2 py-0.5 rounded-full">+100 XP</span>
-              </div>
-              <h2 class="text-[15px] font-extrabold text-inkNavy whitespace-nowrap">高鐵台南 ➔ 台北</h2>
-            </div>
-
-            <!-- Flat High-Speed Bullet Train Illustration -->
-            <svg viewBox="0 0 80 64" class="w-16 h-14 shrink-0">
-              <path d="M12 44 L26 20 C30 15, 38 14, 48 14 L68 14 L68 44 Z" fill="#FFBE4D"/>
-              <path d="M18 34 L27 21 L42 21 L42 34 Z" fill="#FFFFFF"/>
-              <rect x="47" y="21" width="15" height="13" rx="3" fill="#FFFFFF"/>
-              <line x1="8" y1="50" x2="72" y2="50" stroke="#7888A1" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
-          </div>
-
-          <!-- Group 1: Ticket Purchase & Gate Entry + Show Ticket Card -->
-          <div class="bg-surfaceBg p-3 rounded-2xl space-y-2.5">
-            <div data-i18n="thsrEntryGuide" class="text-[11.5px] font-bold text-inkNavy">
-              <div class="flex items-center justify-between gap-1 flex-wrap">
-                <span class="flex items-center gap-1.5 text-goldDark"><svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg> Mua vé máy / quầy</span>
-                <span>➔ Đút vé vào cổng (Không quẹt thẻ)</span>
-              </div>
-            </div>
-
-            <button onclick="openShowModal('購買高鐵票', '你好，我想買最近一班去『台北』的高鐵票，自由座也可以，麻煩你了，謝謝！', 'Xin chào, tôi muốn mua 1 vé Cao Tốc chuyến gần nhất đi Đài Bắc, ghế tự do cũng được. Làm ơn giúp tôi, cảm ơn!', this)" class="w-full py-2.5 px-3.5 bg-lavenderSoft hover:bg-[#E7E9FA] text-inkNavy font-bold rounded-xl text-xs flex items-center justify-between transition-all">
-              <span data-i18n="btnShowThsrCard">Mua vé Cao Tốc đi 台北</span>
-              <svg class="w-3.5 h-3.5 text-lavenderPrimary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-            </button>
-          </div>
-
-          <!-- Group 2: Northbound Platform & Free Seating + Ask Direction Buttons -->
-          <div class="bg-surfaceBg p-3 rounded-2xl space-y-2.5">
-            <div class="grid grid-cols-2 gap-2">
-              <div class="bg-white px-2.5 py-2 rounded-xl flex items-center justify-center gap-1.5">
-                <svg class="w-3.5 h-3.5 text-skyPrimary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-                <span data-i18n="thsrNorthBadge" class="text-xs font-extrabold text-inkNavy whitespace-nowrap">北上 / Sân ga 2</span>
-              </div>
-              <div class="bg-white px-2.5 py-2 rounded-xl flex items-center justify-center gap-1.5">
-                <svg class="w-3.5 h-3.5 text-goldDark shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3"/><path d="M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H7v-2a2 2 0 0 0-4 0Z"/><path d="M5 18v2"/><path d="M19 18v2"/></svg>
-                <span class="text-xs font-extrabold text-goldDark whitespace-nowrap">自由座 / Toa 10–12</span>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
-              <button onclick="openShowModal('詢問高鐵北上月台', '不好意思，請問搭高鐵去『台北』的北上月台怎麼走呢？謝謝！', 'Xin lỗi, cho hỏi lối lên sân ga hướng Bắc (北上) đi Đài Bắc đi hướng nào ạ? Cảm ơn!', this)" class="min-h-[40px] py-2 px-3 bg-skySoft hover:bg-[#E2F1FF] text-inkNavy font-bold rounded-xl text-[11px] flex items-center justify-between gap-1.5 transition-all">
-                <span data-i18n="btnThsrPlatform" class="whitespace-nowrap">Sân ga 北上</span>
-                <svg class="w-3.5 h-3.5 text-skyPrimary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-              </button>
-              <button onclick="openShowModal('詢問自由座車廂', '不好意思，請問高鐵自由座（第 10 到 12 車廂）要往哪邊走呢？謝謝！', 'Xin lỗi, cho hỏi toa ghế tự do (toa 10 đến 12) đi hướng nào ạ? Cảm ơn!', this)" class="min-h-[40px] py-2 px-3 bg-skySoft hover:bg-[#E2F1FF] text-inkNavy font-bold rounded-xl text-[11px] flex items-center justify-between gap-1.5 transition-all">
-                <span data-i18n="btnThsrCar10" class="whitespace-nowrap">Toa 10–12</span>
-                <svg class="w-3.5 h-3.5 text-skyPrimary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- Group 3: Seat Guide & Arrival Countdown -->
-          <div data-i18n="seatNoticeHtml" class="bg-surfaceBg rounded-2xl p-3 space-y-2 text-[11.5px] text-inkNavy leading-relaxed">
-            <div class="flex items-center gap-2">
-              <span class="bg-lavenderPrimary text-white text-[9.5px] font-bold px-2 py-0.5 rounded-full shrink-0">對號座</span>
-              <span>Ghế cố định theo số vé</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="bg-goldPrimary text-white text-[9.5px] font-bold px-2 py-0.5 rounded-full shrink-0">自由座</span>
-              <span>Ghế trống tự chọn (có thể phải đứng)</span>
-            </div>
-            <div class="bg-skySoft text-inkNavy rounded-xl px-3 py-2 flex items-center gap-2">
-              <svg class="w-3.5 h-3.5 text-skyPrimary shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-              <span><b>博愛座:</b> Ghế màu khác, ưu tiên nhường chỗ</span>
-            </div>
-          </div>
-
-          <!-- Interactive 1-Tap 1h 40m Arrival Countdown Timer -->
-          <div class="bg-surfaceBg rounded-2xl p-3 flex items-center justify-between gap-2">
-            <div class="text-xs font-bold text-inkNavy flex items-center gap-1.5 whitespace-nowrap">
-              <span data-i18n="alarmNoticeBody">Xuống ga <b class="bg-lavenderPrimary text-white px-2 py-0.5 rounded-lg">台北</b></span>
-            </div>
-            <button onclick="toggleAlarmTimer()" id="alarmTimerBtn" class="px-3.5 py-2 rounded-xl bg-skyPrimary text-white font-display font-bold text-xs shrink-0 flex items-center gap-1.5 active:scale-95 transition">
-              <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3 2 6"/><path d="m22 6-3-3"/><path d="M10 2h4"/></svg>
-              <span id="alarmTimerText">1:40:00</span>
-            </button>
-          </div>
-
-          <button onclick="toggleStep(3)" id="stageClearBtn-3" class="w-full py-3 rounded-2xl bg-goldPrimary text-white font-bold text-xs flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98] transition">
-            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-            <span data-i18n="btnClearStage3">Đã lên Cao Tốc</span>
-          </button>
-        </div>
-
-        <!-- ==================== STAGE 4 FINAL DESTINATION CARD (AIRY PERIWINKLE) ==================== -->
-        <div id="stageCard-4" class="bg-white/95 rounded-[26px] p-4 shadow-card border border-white space-y-3 transition-all duration-300">
-          <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <div class="w-11 h-11 rounded-2xl bg-lavenderSoft text-lavenderPrimary flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-              </div>
-              <div>
-                <h2 class="text-sm font-extrabold text-inkNavy">台北 Taipei Station</h2>
-                <span class="text-[10.5px] font-bold text-lavenderPrimary">+200 XP</span>
-              </div>
-            </div>
-
-            <button onclick="toggleStep(4)" id="stageClearBtn-4" class="px-4 py-2.5 rounded-2xl bg-lavenderPrimary text-white font-bold text-xs shrink-0 whitespace-nowrap active:scale-95 transition">
-              <span data-i18n="btnClearStage4">Đã tới nơi!</span>
-            </button>
-          </div>
-
-          <button onclick="openShowModal('台北車站大廳西門問路', '你好，不好意思我剛到高鐵台北站，我要去一樓『車站大廳』的『西門（西一門／西三門）』找家人，請問該怎麼走呢？謝謝你！', 'Xin chào, xin lỗi tôi vừa đến ga Cao tốc Đài Bắc, tôi cần lên sảnh chính tầng 1 (車站大廳) ở Cửa Tây (西門) để gặp người nhà. Cho hỏi đi hướng nào ạ? Cảm ơn bạn!', this)" class="w-full py-2.5 px-3.5 rounded-2xl bg-lavenderSoft hover:bg-[#E7E9FA] text-inkNavy font-bold text-[11.5px] flex items-center justify-between transition-all">
-            <span data-i18n="btnTaipeiExit">Hỏi đường lên Sảnh chính Cửa Tây (西門)</span>
-            <svg class="w-3.5 h-3.5 text-lavenderPrimary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </button>
-        </div>
-
-      </section>
-
-      <!-- ================= TAB 2: TICKET MACHINE PRACTICE ================= -->
-      <section id="tab-simulator" class="space-y-4 hidden">
-        <div class="bg-white/95 rounded-[26px] p-4 shadow-card border border-white space-y-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="w-9 h-9 rounded-2xl bg-skySoft text-skyPrimary flex items-center justify-center">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
-              </span>
-              <h2 data-i18n="simTitle" class="text-sm font-extrabold text-inkNavy">Tập Mua Vé</h2>
-              <span class="text-[10px] font-bold text-skyPrimary bg-skySoft px-2 py-0.5 rounded-full">+50 XP</span>
-            </div>
-            <button onclick="resetSimulator()" class="text-[11px] font-bold text-skyPrimary bg-skySoft px-3 py-1.5 rounded-full flex items-center gap-1 active:scale-95 transition">
-              <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-              <span data-i18n="simReset">Làm lại</span>
-            </button>
-          </div>
-
-          <div class="bg-[#34425E] rounded-3xl p-4 text-white space-y-3.5">
-            <div class="flex items-center justify-between text-[10.5px] text-slate-300 border-b border-slate-600/80 pb-2">
-              <span class="font-display font-bold tracking-wide">THSR</span>
-              <span id="simStepBadge" class="bg-skyPrimary text-white px-2.5 py-0.5 rounded-full font-bold">1 / 3</span>
-            </div>
-
-            <div id="sim-step-1" class="space-y-3">
-              <p data-i18n="simStep1Label" class="text-xs font-bold text-skySoft">Chọn ga đến</p>
-              <div class="grid grid-cols-3 gap-2">
-                <button onclick="simWrongStation()" class="min-h-[54px] py-2 rounded-2xl bg-slate-700/80 text-slate-300 text-xs font-semibold active:scale-95 transition">台中<br>Taichung</button>
-                <button onclick="simWrongStation()" class="min-h-[54px] py-2 rounded-2xl bg-slate-700/80 text-slate-300 text-xs font-semibold active:scale-95 transition">板橋<br>Banqiao</button>
-                <button onclick="simSelectStation()" class="min-h-[54px] py-2 rounded-2xl bg-skyPrimary text-white text-xs font-extrabold active:scale-95 transition">台北<br>Taipei</button>
-              </div>
-            </div>
-
-            <div id="sim-step-2" class="space-y-3 hidden">
-              <p data-i18n="simStep2Label" class="text-xs font-bold text-skySoft">Chọn loại ghế</p>
-              <div class="grid grid-cols-2 gap-2.5">
-                <button onclick="simSelectSeat('reserved', 1350)" class="min-h-[60px] p-3 rounded-2xl bg-slate-700/90 hover:bg-skyPrimary text-left active:scale-95 transition">
-                  <span class="text-xs font-extrabold block">對號座</span>
-                  <span class="text-[11px] text-goldPrimary font-bold">1,350 NTD</span>
-                </button>
-                <button onclick="simSelectSeat('nonreserved', 1305)" class="min-h-[60px] p-3 rounded-2xl bg-slate-700/90 hover:bg-mintPrimary text-left active:scale-95 transition">
-                  <span class="text-xs font-extrabold block">自由座</span>
-                  <span class="text-[11px] text-mintPrimary font-bold">1,305 NTD</span>
-                </button>
-              </div>
-            </div>
-
-            <div id="sim-step-3" class="space-y-3 hidden">
-              <div class="flex justify-between items-center text-xs">
-                <span data-i18n="simNeedPay">Cần thanh toán</span>
-                <span id="simPriceDisplay" class="text-base font-extrabold text-goldPrimary">1,350 NTD</span>
-              </div>
-              <div class="flex justify-between items-center text-xs">
-                <span data-i18n="simInserted">Đã đút tiền</span>
-                <span id="simPaidDisplay" class="text-sm font-extrabold text-mintPrimary">0 NTD</span>
-              </div>
-              <div class="grid grid-cols-2 gap-2 pt-1">
-                <button onclick="simInsertBill(1000)" class="min-h-[44px] py-2.5 rounded-2xl bg-skyPrimary text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition">
-                  <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
-                  <span>+ 1,000</span>
-                </button>
-                <button onclick="simInsertBill(500)" class="min-h-[44px] py-2.5 rounded-2xl bg-goldPrimary text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition">
-                  <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
-                  <span>+ 500</span>
-                </button>
-              </div>
-            </div>
-
-            <div id="sim-step-4" class="space-y-2.5 hidden">
-              <div class="bg-goldSoft text-inkNavy rounded-2xl p-3.5 space-y-1">
-                <div class="flex justify-between items-center text-[10px] font-extrabold text-goldDark">
-                  <span>THSR TICKET (+50 XP)</span>
-                  <span id="simTicketTypeBadge">對號座</span>
-                </div>
-                <div class="flex items-center justify-between text-sm font-extrabold">
-                  <span>台南 Tainan</span>
-                  <svg class="w-3.5 h-3.5 text-goldDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                  <span>台北 Taipei</span>
-                </div>
-                <p id="simChangeText" class="text-[11px] font-bold text-mintDark pt-1">找零: 150 NTD</p>
-              </div>
-              <div class="bg-slate-700/80 rounded-2xl px-3 py-2.5 text-[11px] text-slate-200 flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-skyPrimary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-                <span data-i18n="simGateHint">Đút vé chiều mũi tên hướng lên & lấy lại vé phía trước</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= TAB 3: CHINESE FLASHCARDS ================= -->
-      <section id="tab-staff" class="space-y-2.5 hidden">
-        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-          <button onclick="filterCards('all')" id="filter-all" class="px-3.5 py-2 rounded-full bg-skyPrimary text-white text-xs font-bold shrink-0 transition">
-            <span data-i18n="filterAll">Tất cả</span>
-          </button>
-          <button onclick="filterCards('tra')" id="filter-tra" class="px-3.5 py-2 rounded-full bg-white text-inkMuted shadow-soft text-xs font-bold shrink-0 transition">
-            TRA
-          </button>
-          <button onclick="filterCards('thsr')" id="filter-thsr" class="px-3.5 py-2 rounded-full bg-white text-inkMuted shadow-soft text-xs font-bold shrink-0 transition">
-            THSR
-          </button>
-          <button onclick="filterCards('card')" id="filter-card" class="px-3.5 py-2 rounded-full bg-white text-inkMuted shadow-soft text-xs font-bold shrink-0 transition">
-            EasyCard
-          </button>
-        </div>
-
-        <div data-cat="tra" onclick="openShowModal('確認直達月台', '不好意思，請問直達『沙崙』的區間車是在第一月台搭車嗎？謝謝！', 'Xin lỗi, cho hỏi tàu địa phương đi thẳng đến Shalun (沙崙) có phải đón ở sân ga số 1 không ạ? Cảm ơn!', this)" class="flashcard-item bg-white/95 rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3 cursor-pointer transition-all">
-          <p class="text-sm font-bold text-inkNavy font-tc leading-snug">不好意思，請問直達『沙崙』的區間車是在第一月台搭車嗎？謝謝！</p>
-          <span class="w-9 h-9 rounded-full bg-skySoft text-skyPrimary flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </span>
-        </div>
-
-        <div data-cat="tra" onclick="openShowModal('確認班次直達', '不好意思，請問這班車有直達『沙崙』嗎？謝謝！', 'Xin lỗi, cho hỏi chuyến tàu này có đi thẳng đến Shalun (沙崙) không ạ? Cảm ơn!', this)" class="flashcard-item bg-white/95 rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3 cursor-pointer transition-all">
-          <p class="text-sm font-bold text-inkNavy font-tc leading-snug">不好意思，請問這班車有直達『沙崙』嗎？謝謝！</p>
-          <span class="w-9 h-9 rounded-full bg-skySoft text-skyPrimary flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </span>
-        </div>
-
-        <div data-cat="tra" onclick="openShowModal('詢問下班直達車', '不好意思，請問下一班直達『沙崙』的區間車是幾點呢？謝謝！', 'Xin lỗi, cho hỏi chuyến tàu địa phương đi thẳng đến Shalun (沙崙) tiếp theo là mấy giờ ạ? Cảm ơn!', this)" class="flashcard-item bg-white/95 rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3 cursor-pointer transition-all">
-          <p class="text-sm font-bold text-inkNavy font-tc leading-snug">不好意思，請問下一班直達『沙崙』的區間車是幾點呢？謝謝！</p>
-          <span class="w-9 h-9 rounded-full bg-skySoft text-skyPrimary flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </span>
-        </div>
-
-        <div data-cat="thsr" onclick="openShowModal('轉搭高鐵問路', '你好，不好意思我聽不懂中文，我想搭高鐵去『台北』，請問該怎麼走呢？謝謝你！', 'Xin chào, xin lỗi tôi không biết tiếng Trung, tôi muốn đi tàu cao tốc đến Đài Bắc. Cho hỏi tôi nên đi hướng nào ạ? Cảm ơn bạn!', this)" class="flashcard-item bg-white/95 rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3 cursor-pointer transition-all">
-          <p class="text-sm font-bold text-inkNavy font-tc leading-snug">你好，不好意思我聽不懂中文，我想搭高鐵去『台北』，請問該怎麼走呢？謝謝你！</p>
-          <span class="w-9 h-9 rounded-full bg-lavenderSoft text-lavenderPrimary flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </span>
-        </div>
-
-        <div data-cat="thsr" onclick="openShowModal('購買高鐵車票', '你好，我想買最近一班去『台北』的高鐵票，自由座也可以，麻煩你了，謝謝！', 'Xin chào, tôi muốn mua 1 vé Cao Tốc chuyến gần nhất đi Đài Bắc, ghế tự do cũng được. Làm ơn giúp tôi, cảm ơn!', this)" class="flashcard-item bg-white/95 rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3 cursor-pointer transition-all">
-          <p class="text-sm font-bold text-inkNavy font-tc leading-snug">你好，我想買最近一班去『台北』的高鐵票，自由座也可以，麻煩你了，謝謝！</p>
-          <span class="w-9 h-9 rounded-full bg-goldSoft text-goldDark flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </span>
-        </div>
-
-        <div data-cat="thsr" onclick="openShowModal('高鐵驗票閘門', '不好意思，請問拿這張高鐵票進站，是走這個閘門嗎？謝謝！', 'Xin lỗi, cho hỏi cầm vé giấy Cao tốc này vào ga là đi cổng này phải không ạ? Cảm ơn!', this)" class="flashcard-item bg-white/95 rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3 cursor-pointer transition-all">
-          <p class="text-sm font-bold text-inkNavy font-tc leading-snug">不好意思，請問拿這張高鐵票進站，是走這個閘門嗎？謝謝！</p>
-          <span class="w-9 h-9 rounded-full bg-goldSoft text-goldDark flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </span>
-        </div>
-
-        <div data-cat="thsr" onclick="openShowModal('詢問高鐵北上月台', '不好意思，請問搭高鐵去『台北』的北上月台怎麼走呢？謝謝！', 'Xin lỗi, cho hỏi lối lên sân ga hướng Bắc (北上) đi Đài Bắc đi hướng nào ạ? Cảm ơn!', this)" class="flashcard-item bg-white/95 rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3 cursor-pointer transition-all">
-          <p class="text-sm font-bold text-inkNavy font-tc leading-snug">不好意思，請問搭高鐵去『台北』的北上月台怎麼走呢？謝謝！</p>
-          <span class="w-9 h-9 rounded-full bg-goldSoft text-goldDark flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </span>
-        </div>
-
-        <div data-cat="thsr" onclick="openShowModal('詢問自由座車廂', '不好意思，請問高鐵自由座（第 10 到 12 車廂）要往哪邊走呢？謝謝！', 'Xin lỗi, cho hỏi toa ghế tự do (toa 10 đến 12) đi hướng nào ạ? Cảm ơn!', this)" class="flashcard-item bg-white/95 rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3 cursor-pointer transition-all">
-          <p class="text-sm font-bold text-inkNavy font-tc leading-snug">不好意思，請問高鐵自由座（第 10 到 12 車廂）要往哪邊走呢？謝謝！</p>
-          <span class="w-9 h-9 rounded-full bg-goldSoft text-goldDark flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </span>
-        </div>
-
-        <div data-cat="thsr" onclick="openShowModal('確認停靠台北站', '不好意思，請問這班高鐵有停『台北站』嗎？謝謝！', 'Xin lỗi, cho hỏi chuyến tàu cao tốc này có dừng ở ga Đài Bắc (Taipei) không ạ? Cảm ơn!', this)" class="flashcard-item bg-white/95 rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3 cursor-pointer transition-all">
-          <p class="text-sm font-bold text-inkNavy font-tc leading-snug">不好意思，請問這班高鐵有停『台北站』嗎？謝謝！</p>
-          <span class="w-9 h-9 rounded-full bg-goldSoft text-goldDark flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </span>
-        </div>
-
-        <div data-cat="card" onclick="openShowModal('悠遊卡加值', '你好，我想加值悠遊卡 100 元，麻煩你了，謝謝！', 'Xin chào, tôi muốn nạp 100 NTD vào thẻ EasyCard. Làm ơn giúp tôi, cảm ơn!', this)" class="flashcard-item bg-white/95 rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3 cursor-pointer transition-all">
-          <p class="text-sm font-bold text-inkNavy font-tc leading-snug">你好，我想加值悠遊卡 100 元，麻煩你了，謝謝！</p>
-          <span class="w-9 h-9 rounded-full bg-mintSoft text-mintDark flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </span>
-        </div>
-
-        <div data-cat="thsr" onclick="openShowModal('台北車站大廳西門問路', '你好，不好意思我剛到高鐵台北站，我要去一樓『車站大廳』的『西門（西一門／西三門）』找家人，請問該怎麼走呢？謝謝你！', 'Xin chào, xin lỗi tôi vừa đến ga Cao tốc Đài Bắc, tôi cần lên sảnh chính tầng 1 (車站大廳) ở Cửa Tây (西門) để gặp người nhà. Cho hỏi đi hướng nào ạ? Cảm ơn bạn!', this)" class="flashcard-item bg-white/95 rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3 cursor-pointer transition-all">
-          <p class="text-sm font-bold text-inkNavy font-tc leading-snug">你好，不好意思我剛到高鐵台北站，我要去一樓『車站大廳』的『西門（西一門／西三門）』找家人，請問該怎麼走呢？謝謝你！</p>
-          <span class="w-9 h-9 rounded-full bg-lavenderSoft text-lavenderPrimary flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </span>
-        </div>
-      </section>
-
-      <!-- ================= TAB 4: TIPS & GATE GUIDE ================= -->
-      <section id="tab-tips" class="space-y-4 hidden">
-        <div class="bg-white/95 rounded-[26px] p-4 shadow-card border border-white space-y-3">
-          <div class="flex items-center gap-2.5">
-            <span class="w-9 h-9 rounded-2xl bg-mintSoft text-mintDark flex items-center justify-center">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            </span>
-            <h2 data-i18n="tipsCardTitle" class="text-sm font-extrabold text-inkNavy">Thẻ EasyCard / iPASS</h2>
-          </div>
-
-          <div class="space-y-2 text-xs">
-            <div class="bg-surfaceBg p-3 rounded-2xl flex items-center justify-between">
-              <span class="font-bold text-inkNavy">TRA (永康 ➔ 沙崙)</span>
-              <span class="font-extrabold text-skyPrimary">EasyCard ~25 NTD</span>
-            </div>
-            <div class="bg-surfaceBg p-3 rounded-2xl flex items-center justify-between">
-              <span data-i18n="tipsThsrTicketNote" class="font-bold text-inkNavy">THSR (Mua vé giấy)</span>
-              <span class="font-extrabold text-goldDark">1,305–1,350 NTD</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white/95 rounded-[26px] p-4 shadow-card border border-white space-y-3">
-          <h3 data-i18n="gateGuideTitle" class="text-sm font-extrabold text-inkNavy">Qua cổng soát vé</h3>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="bg-mintSoft rounded-2xl p-3.5 text-center space-y-1.5">
-              <div class="w-10 h-10 mx-auto rounded-full bg-white text-mintDark flex items-center justify-center">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-              </div>
-              <p class="text-xs font-extrabold text-inkNavy">EasyCard</p>
-              <p data-i18n="gateCardDesc" class="text-[11px] text-inkMuted">Chạm thẻ bên phải cổng</p>
-            </div>
-            <div class="bg-skySoft rounded-2xl p-3.5 text-center space-y-1.5">
-              <div class="w-10 h-10 mx-auto rounded-full bg-white text-skyPrimary flex items-center justify-center">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-              </div>
-              <p class="text-xs font-extrabold text-inkNavy">Vé giấy THSR</p>
-              <p data-i18n="gateTicketDesc" class="text-[11px] text-inkMuted">Đút mũi tên hướng lên & lấy lại vé phía trước</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </main>
-
-    <!-- Floating SOS Pill Button -->
-    <div class="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-md px-5 pointer-events-none z-40 flex justify-end">
-      <button onclick="openEmergencyModal(this)" aria-label="Cầu cứu khẩn cấp" class="pointer-events-auto h-11 px-4 rounded-full bg-peachPrimary text-white shadow-[0_8px_20px_-4px_rgba(244,137,115,0.45)] flex items-center gap-2 text-xs font-extrabold active:scale-95 transition">
-        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"/><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"/></svg>
-        <span>SOS</span>
+    <!-- Outbound / Inbound Switcher -->
+    <div class="bg-white rounded-full p-1 flex items-center">
+      <button id="dirBtnOutbound" onclick="switchDirection('outbound')" class="flex-1 py-2.5 rounded-full text-xs font-extrabold bg-[#3FB6F6] text-white transition-colors">
+        去程 永康 ➔ 台北
+      </button>
+      <button id="dirBtnInbound" onclick="switchDirection('inbound')" class="flex-1 py-2.5 rounded-full text-xs font-extrabold text-slate-500 transition-colors">
+        回程 台北 ➔ 永康
       </button>
     </div>
 
-    <!-- Bottom Pill-Expanding Navigation Bar -->
-    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/95 backdrop-blur-md shadow-nav px-4 pt-2.5 pb-[max(0.85rem,env(safe-area-inset-bottom))] z-40">
-      <div class="flex items-center justify-around gap-1">
-        <button onclick="switchTab('route')" id="nav-route" class="flex items-center gap-2 px-4 py-2.5 rounded-full bg-skyPrimary text-white font-bold text-xs transition-all">
-          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>
-          <span data-i18n="navRoute" class="nav-label">Lộ trình</span>
-        </button>
+    <!-- TAB 1: MAIN JOURNEY VIEW -->
+    <main id="tab-journey" class="space-y-3.5">
 
-        <button onclick="switchTab('simulator')" id="nav-simulator" class="flex items-center gap-2 px-3.5 py-2.5 rounded-full text-inkMuted hover:bg-skySoft font-bold text-xs transition-all">
-          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
-          <span data-i18n="navSim" class="nav-label hidden">Mua vé</span>
-        </button>
-
-        <button onclick="switchTab('staff')" id="nav-staff" class="flex items-center gap-2 px-3.5 py-2.5 rounded-full text-inkMuted hover:bg-skySoft font-bold text-xs transition-all">
-          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span data-i18n="navCards" class="nav-label hidden">Thẻ chữ</span>
-        </button>
-
-        <button onclick="switchTab('tips')" id="nav-tips" class="flex items-center gap-2 px-3.5 py-2.5 rounded-full text-inkMuted hover:bg-skySoft font-bold text-xs transition-all">
-          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          <span data-i18n="navTips" class="nav-label hidden">Lưu ý</span>
-        </button>
-      </div>
-    </nav>
-
-    <!-- ================= MODAL 1: FLASHCARD ================= -->
-    <div id="showModal" onclick="closeModalOnBackdrop(event, 'showModal')" class="fixed inset-0 bg-inkNavy/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-5">
-      <div class="bg-white w-full max-w-sm rounded-[28px] p-6 shadow-2xl space-y-5 relative">
-        <div class="flex items-center justify-between">
-          <span id="modalTitle" class="text-[11px] font-extrabold bg-skySoft text-skyPrimary px-3 py-1 rounded-full">Thẻ Giao Tiếp</span>
-          <button onclick="closeModal('showModal')" aria-label="Đóng" class="w-9 h-9 rounded-full bg-surfaceBg text-inkMuted flex items-center justify-center text-sm active:scale-90 transition">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+      <!-- 4-Step Flat Progress Card (Zero Shadows, Zero Glow on Circles) -->
+      <section class="soft-card px-5 pt-7 pb-5">
+        <div class="relative flex items-start justify-between">
+          <!-- Background Track Line -->
+          <div class="absolute top-5 left-8 right-8 h-1 bg-[#E5EFF7] rounded-full"></div>
+          <!-- Active Progress Fill Line -->
+          <div id="progressFillLine" class="absolute top-5 left-8 h-1 bg-[#3FB6F6] rounded-full transition-all duration-300" style="width: 0%;"></div>
+          <!-- Step Nodes -->
+          <div id="stepNodesContainer" class="relative z-10 w-full flex justify-between"></div>
         </div>
+      </section>
 
-        <div class="bg-surfaceBg rounded-2xl p-5 text-center">
-          <p id="modalChineseText" class="text-xl font-extrabold text-inkNavy font-tc leading-snug tracking-wide">
-            請問往『高鐵台南站』怎麼走？
-          </p>
+      <!-- Journey Step Cards -->
+      <section id="cardsContainer" class="space-y-3.5"></section>
+    </main>
+
+    <!-- TAB 2: TICKET GUIDE VIEW -->
+    <section id="tab-tickets" class="hidden space-y-3.5">
+      <div class="soft-card p-5 space-y-3">
+        <div class="bg-[#E9F6FE] rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-[11px] font-extrabold text-[#3FB6F6]">TRA 區間車</span>
+            <h2 id="ticketTraTitle" class="text-base font-extrabold text-[#222B3A] mt-0.5">Thẻ EasyCard</h2>
+          </div>
+          <span class="text-2xl">💳</span>
         </div>
-
-        <p id="modalViText" class="text-xs font-semibold text-inkMuted text-center leading-relaxed">
-          Cho hỏi lối đi sang Ga Cao Tốc Đài Nam đi hướng nào ạ?
+        <p id="ticketTraDesc" class="text-xs font-semibold text-slate-600 leading-relaxed px-1">
+          永康 ➔ 沙崙: Quẹt thẻ EasyCard ở cổng vào và cổng ra.
         </p>
-
-        <button onclick="speakCurrentModal(this)" class="w-full py-3.5 rounded-2xl bg-skyPrimary text-white font-bold text-sm flex items-center justify-center gap-2.5 transition-all">
-          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          <span data-i18n="btnSpeak">Phát âm tiếng Trung</span>
-        </button>
       </div>
-    </div>
 
-    <!-- ================= MODAL 2: EMERGENCY SOS MODAL ================= -->
-    <div id="emergencyModal" onclick="closeModalOnBackdrop(event, 'emergencyModal')" class="fixed inset-0 bg-inkNavy/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-5">
-      <div class="bg-white w-full max-w-sm rounded-[28px] p-6 shadow-2xl space-y-5 relative">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-extrabold bg-peachSoft text-peachPrimary px-3 py-1 rounded-full flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"/><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"/></svg>
-            <span>SOS</span>
-          </span>
-          <button onclick="closeModal('emergencyModal')" aria-label="Đóng" class="w-9 h-9 rounded-full bg-surfaceBg text-inkMuted flex items-center justify-center text-sm active:scale-90 transition">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+      <div class="soft-card p-5 space-y-3">
+        <div class="bg-[#FEF5E6] rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-[11px] font-extrabold text-[#F4A938]">THSR 高鐵</span>
+            <h2 id="ticketThsrTitle" class="text-base font-extrabold text-[#222B3A] mt-0.5">Vé giấy tại quầy</h2>
+          </div>
+          <span class="text-2xl">🎫</span>
         </div>
-
-        <div class="bg-peachSoft/60 rounded-2xl p-5 text-center">
-          <p class="text-xl font-extrabold text-inkNavy font-tc leading-snug">
-            你好，不好意思我聽不懂中文，請問這裡是哪一站呢？我想去『台北』，請問該怎麼搭車？謝謝你！
-          </p>
-        </div>
-
-        <p class="text-xs font-semibold text-inkMuted text-center leading-relaxed">
-          Xin chào, xin lỗi tôi không biết tiếng Trung. Cho hỏi đây là ga nào ạ? Tôi muốn đi Đài Bắc (Taipei), xin hỏi đi tàu thế nào? Cảm ơn bạn!
+        <p id="ticketThsrDesc" class="text-xs font-semibold text-slate-600 leading-relaxed px-1">
+          Tàu Cao Tốc (高鐵): Mua vé giấy tại quầy và giữ vé để ra cổng.
         </p>
-
-        <button onclick="speakChinese('你好，不好意思我聽不懂中文，請問這裡是哪一站呢？我想去『台北』，請問該怎麼搭車？謝謝你！', this)" class="w-full py-3.5 rounded-2xl bg-peachPrimary text-white font-bold text-sm flex items-center justify-center gap-2.5 transition-all">
-          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          <span data-i18n="btnSpeak">Phát âm tiếng Trung</span>
-        </button>
       </div>
-    </div>
+    </section>
 
-    <!-- ================= MODAL 3: ARRIVAL CELEBRATION MODAL ================= -->
-    <div id="victoryModal" onclick="closeModalOnBackdrop(event, 'victoryModal')" class="fixed inset-0 bg-inkNavy/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-5">
-      <div class="bg-white w-full max-w-sm rounded-[28px] p-6 shadow-2xl space-y-4 text-center relative">
-        <div class="flex justify-end">
-          <button onclick="closeModal('victoryModal')" aria-label="Đóng" class="w-9 h-9 rounded-full bg-surfaceBg text-inkMuted flex items-center justify-center text-sm active:scale-90 transition">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
+    <!-- TAB 3: FLASHCARDS COLLECTION VIEW -->
+    <section id="tab-cards" class="hidden space-y-3">
+      <div id="flashcardListContainer" class="space-y-3"></div>
+    </section>
 
-        <div class="w-16 h-16 mx-auto rounded-full bg-goldSoft text-goldDark flex items-center justify-center animate-float">
-          <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55-.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-        </div>
-
-        <h3 data-i18n="victoryTitle" class="text-lg font-extrabold text-inkNavy">Chúc Mừng Đã Đến Đài Bắc!</h3>
-        <p data-i18n="victoryDesc" class="text-xs font-medium text-inkMuted leading-relaxed">
-          Bạn đã hoàn thành toàn bộ hành trình từ Vĩnh Khang đến ga Đài Bắc an toàn!
-        </p>
-        <div class="inline-block bg-skySoft text-skyPrimary text-xs font-extrabold px-4 py-1.5 rounded-full">
-          ⭐ <span id="victoryXpTotal">500</span> XP
-        </div>
+    <!-- TAB 4: INFO & CHECKLIST VIEW -->
+    <section id="tab-info" class="hidden space-y-4">
+      <div class="soft-card p-5 space-y-3.5">
+        <h2 id="infoTitle" class="text-base font-extrabold text-[#222B3A]">Lưu ý tại ga Đài Bắc</h2>
+        <div id="infoNotesList" class="bg-[#FEF5E6] rounded-2xl p-4 space-y-3 text-xs font-bold text-[#9C5E0C]"></div>
+        <a href="https://trctrack.com/station/yongkang?to=shalun" target="_blank" class="w-full py-3.5 rounded-full bg-[#4AC7C3] text-white font-extrabold text-xs flex items-center justify-center gap-2">
+          <span id="infoTimetableLabel">⏱ Giờ tàu 永康 ➔ 沙崙</span>
+          <span>↗</span>
+        </a>
       </div>
-    </div>
+    </section>
 
   </div>
 
+  <!-- Floating Coral SOS Button (Unobstructed Right-Thumb Zone) -->
+  <button onclick="openSosFlashcard()" class="fixed bottom-20 right-4 z-30 bg-[#F48474] text-white font-extrabold text-sm px-4 py-3 rounded-full flex items-center gap-2 active:scale-95 transition-transform">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M4.93 4.93l4.24 4.24m5.66 5.66l4.24 4.24m0-14.14l-4.24 4.24m-5.66 5.66l-4.24 4.24"/></svg>
+    <span>SOS</span>
+  </button>
+
+  <!-- Fixed Bottom Navigation Bar -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E3EFF8] rounded-t-3xl">
+    <div class="max-w-md mx-auto px-3 py-2 flex items-center justify-around">
+      <button onclick="switchTab('journey')" id="nav-journey" class="px-4 py-2 rounded-full bg-[#3FB6F6] text-white text-xs font-extrabold flex items-center gap-1.5 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path stroke-linecap="round" d="M8.5 19H12a4 4 0 004-4V9a4 4 0 014-4h-1"/></svg>
+        <span id="navLabelJourney">Lộ trình</span>
+      </button>
+      <button onclick="switchTab('tickets')" id="nav-tickets" class="p-2.5 rounded-full text-slate-400 flex items-center gap-1.5 text-xs font-extrabold transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+        <span id="navLabelTickets" class="hidden">Vé tàu</span>
+      </button>
+      <button onclick="switchTab('cards')" id="nav-cards" class="p-2.5 rounded-full text-slate-400 flex items-center gap-1.5 text-xs font-extrabold transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="3"/><path stroke-linecap="round" d="M8 10h8M8 14h5"/></svg>
+        <span id="navLabelCards" class="hidden">Thẻ chữ</span>
+      </button>
+      <button onclick="switchTab('info')" id="nav-info" class="p-2.5 rounded-full text-slate-400 flex items-center gap-1.5 text-xs font-extrabold transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 11v5m0-8h.01"/></svg>
+        <span id="navLabelInfo" class="hidden">Lưu ý</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Large Chinese Flashcard Modal -->
+  <div id="flashcardModal" onclick="closeFlashcardModal(event)" class="fixed inset-0 z-50 hidden bg-[#222B3A]/50 backdrop-blur-xs flex items-center justify-center p-5">
+    <div onclick="event.stopPropagation()" class="bg-white rounded-[32px] w-full max-w-sm p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <span id="modalBadge" class="bg-[#E9F6FE] text-[#1D9CE0] text-[11px] font-extrabold px-3 py-1 rounded-full">請出示給工作人員</span>
+        <button onclick="hideFlashcardModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold flex items-center justify-center">✕</button>
+      </div>
+      <div id="modalStaffHint" class="hidden bg-[#FEF5E6] text-[#9C5E0C] text-xs font-extrabold px-3.5 py-2.5 rounded-2xl">
+        👮 請出示給閘門附近穿制服的工作人員
+      </div>
+      <div class="bg-[#F6FAFD] rounded-2xl p-5 space-y-2.5">
+        <p id="modalZhText" class="text-2xl font-black text-[#222B3A] leading-snug"></p>
+        <p id="modalViText" class="text-xs font-semibold text-slate-500 leading-relaxed"></p>
+      </div>
+      <button onclick="replayModalAudio()" class="w-full py-3.5 rounded-full bg-[#3FB6F6] text-white font-extrabold text-sm flex items-center justify-center gap-2 active:scale-98 transition-transform">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+        <span id="modalSpeakLabel">Nghe lại / 再次播放</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Custom Reset Confirmation Modal -->
+  <div id="resetModal" onclick="if(event.target===this) closeResetModal()" class="fixed inset-0 z-50 hidden bg-[#222B3A]/50 flex items-center justify-center p-5">
+    <div class="bg-white rounded-[28px] w-full max-w-xs p-6 space-y-4 text-center">
+      <h3 id="resetModalTitle" class="text-base font-extrabold text-[#222B3A]">Đặt lại tiến độ?</h3>
+      <div class="flex gap-2.5">
+        <button onclick="closeResetModal()" class="flex-1 py-3 rounded-full bg-slate-100 text-slate-600 text-xs font-extrabold">Hủy / 取消</button>
+        <button onclick="confirmResetProgress()" class="flex-1 py-3 rounded-full bg-[#F48474] text-white text-xs font-extrabold">Đặt lại / 重置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Room Code Modal -->
+  <div id="roomModal" onclick="if(event.target===this) closeRoomCodeModal()" class="fixed inset-0 z-50 hidden bg-[#222B3A]/50 flex items-center justify-center p-5">
+    <div class="bg-white rounded-[28px] w-full max-w-xs p-6 space-y-4">
+      <h3 class="text-sm font-extrabold text-[#222B3A]">Mã phòng / 房間代碼 (6 số)</h3>
+      <input id="roomCodeInput" type="text" maxlength="6" inputmode="numeric" class="w-full bg-[#F6FAFD] border border-[#E3EFF8] rounded-2xl px-4 py-3 text-center text-lg font-black tracking-widest text-[#222B3A] focus:outline-none focus:border-[#3FB6F6]" />
+      <div class="flex gap-2.5">
+        <button onclick="closeRoomCodeModal()" class="flex-1 py-2.5 rounded-full bg-slate-100 text-slate-600 text-xs font-extrabold">Hủy</button>
+        <button onclick="saveCustomRoomCode()" class="flex-1 py-2.5 rounded-full bg-[#3FB6F6] text-white text-xs font-extrabold">Lưu / 儲存</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // ================= APP & SYNC STATE =================
-    let currentLang = 'vi';
-    let completedSteps = { 1: false, 2: false, 3: false, 4: false };
-    let bonusXp = 0;
-    let simRewardClaimed = false;
-    let currentModalChinese = '';
-    let simPrice = 1350;
-    let simPaid = 0;
-    let simSeatType = '對號座';
-
-    // Real-time Sync & Notification State
-    const clientId = 'client_' + Math.random().toString(36).substring(2, 10);
-    let roomCode = '';
-    let eventSource = null;
-    let notifyEnabled = false;
-    let audioCtx = null;
-
-    // 1h 40m Arrival Countdown Timer State
-    let alarmInterval = null;
-    let alarmRemainingSec = 100 * 60;
-    let alarmRunning = false;
-
-    const checkpointLabels = {
-      1: { vi: 'Ga Vĩnh Khang (永康站)', zh: '永康火車站 (Yongkang)' },
-      2: { vi: 'Ga Sa Luân (沙崙站)', zh: '沙崙站 (Shalun)' },
-      3: { vi: 'Cao Tốc Đài Nam (高鐵台南)', zh: '高鐵台南站 (THSR Tainan)' },
-      4: { vi: 'Ga Đài Bắc (台北站)', zh: '高鐵台北站 (Taipei)' }
-    };
-
-    // ================= I18N TRANSLATIONS =================
-    const translations = {
-      vi: {
-        btnCopyLink: "Gửi link",
-        btnEnableNotify: "Báo chuông",
-        s1PlatformBadge: "Sân ga 1",
-        s1Mission: "EasyCard / Tàu <b>區間車</b>",
-        s1DirectLink: "<div class='flex items-center gap-2 min-w-0'><svg class='w-3.5 h-3.5 text-mintDark shrink-0' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'><rect x='2' y='7' width='20' height='15' rx='2'/><polyline points='17 2 12 7 7 2'/></svg><span class='bg-white text-mintDark px-2 py-0.5 rounded-lg font-extrabold shrink-0'>沙崙</span><span class='truncate'>Đi thẳng</span></div><span class='bg-mintPrimary text-white px-2.5 py-1 rounded-xl text-[11px] font-extrabold shrink-0 flex items-center gap-1.5'><svg class='w-3 h-3 shrink-0' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg><span>Giờ tàu</span><svg class='w-2.5 h-2.5 shrink-0' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/><polyline points='15 3 21 3 21 9'/><line x1='10' y1='14' x2='21' y2='3'/></svg></span>",
-        btnAskPlatform: "Sân ga đi 沙崙",
-        btnAskTransfer: "Tàu đi thẳng?",
-        btnAskSwipe: "Quẹt thẻ vào ga",
-        btnTopup: "Nạp tiền 100元",
-        btnClearStage1: "Đã lên tàu",
-        s2Mission: "Ra cổng <b>沙崙</b> ➔ <b>高鐵 THSR</b>",
-        btnAskThsrWalk: "Hỏi đường sang 高鐵 THSR đi 台北",
-        btnClearStage2: "Đã tới ga Cao Tốc",
-        thsrEntryGuide: "<div class='flex items-center justify-between gap-1 flex-wrap'><span class='flex items-center gap-1.5 text-goldDark'><svg class='w-3.5 h-3.5 shrink-0' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'><path d='M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'/><path d='M13 5v2'/><path d='M13 17v2'/><path d='M13 11v2'/></svg> Mua vé máy / quầy</span><span>➔ Đút vé vào cổng (Không quẹt thẻ)</span></div>",
-        btnShowThsrCard: "Mua vé Cao Tốc đi 台北",
-        thsrNorthBadge: "北上 / Sân ga 2",
-        btnThsrPlatform: "Sân ga 北上",
-        btnThsrCar10: "Toa 10–12",
-        seatNoticeHtml: "<div class='flex items-center gap-2'><span class='bg-lavenderPrimary text-white text-[9.5px] font-bold px-2 py-0.5 rounded-full shrink-0'>對號座</span><span>Ghế cố định theo số vé</span></div><div class='flex items-center gap-2'><span class='bg-goldPrimary text-white text-[9.5px] font-bold px-2 py-0.5 rounded-full shrink-0'>自由座</span><span>Ghế trống tự chọn (có thể phải đứng)</span></div><div class='bg-skySoft text-inkNavy rounded-xl px-3 py-2 flex items-center gap-2'><svg class='w-3.5 h-3.5 text-skyPrimary shrink-0' viewBox='0 0 24 24' fill='currentColor'><path d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/></svg><span><b>博愛座:</b> Ghế màu khác, ưu tiên nhường chỗ</span></div>",
-        alarmNoticeBody: "Xuống ga <b class='bg-lavenderPrimary text-white px-2 py-0.5 rounded-lg'>台北</b>",
-        btnClearStage3: "Đã lên Cao Tốc",
-        btnClearStage4: "Đã tới nơi!",
-        btnTaipeiExit: "Hỏi đường lên Sảnh chính Cửa Tây (西門)",
-        simTitle: "Tập Mua Vé",
-        simReset: "Làm lại",
-        simStep1Label: "Chọn ga đến",
-        simStep2Label: "Chọn loại ghế",
-        simNeedPay: "Cần thanh toán",
-        simInserted: "Đã đút tiền",
-        simGateHint: "Đút vé chiều mũi tên hướng lên & lấy lại vé phía trước",
-        filterAll: "Tất cả",
-        tipsCardTitle: "Thẻ EasyCard / iPASS",
-        tipsThsrTicketNote: "THSR (Mua vé giấy)",
-        gateGuideTitle: "Qua cổng soát vé",
-        gateCardDesc: "Chạm thẻ bên phải cổng",
-        gateTicketDesc: "Đút mũi tên hướng lên & lấy lại vé phía trước",
-        navRoute: "Lộ trình",
-        navSim: "Mua vé",
-        navCards: "Thẻ chữ",
-        navTips: "Lưu ý",
-        btnSpeak: "Phát âm tiếng Trung",
-        victoryTitle: "Chúc Mừng Đã Đến Đài Bắc!",
-        victoryDesc: "Bạn đã hoàn thành toàn bộ hành trình từ Vĩnh Khang đến ga Đài Bắc an toàn!"
+    // Journey Data Definitions (Concise single-language UI copy + physical Chinese sign keywords)
+    const JOURNEY_DATA = {
+      outbound: {
+        titleFrom: '永康',
+        titleTo: '台北',
+        steps: [
+          {
+            id: 1,
+            shortZh: '永康',
+            shortVi: 'Yongkang',
+            xp: 100,
+            type: 'tra',
+            tagLeft: 'TRA 區間車 / 25m',
+            platformPill: 'Sân ga 1',
+            title: '永康 ➔ 沙崙',
+            infoTextVi: 'EasyCard ➔ 區間車',
+            infoTextZh: '刷悠遊卡進站搭乘',
+            mintBadge: '沙崙',
+            mintTextVi: 'Đi thẳng',
+            mintTextZh: '直達車',
+            timetableUrl: 'https://trctrack.com/station/yongkang?to=shalun',
+            phrases: [
+              { labelVi: 'Sân ga đi 沙崙', labelZh: '沙崙月台在哪', zh: '請問往沙崙的區間車在第幾月台？', vi: 'Cho hỏi tàu đi Shalun ở sân ga số mấy?' },
+              { labelVi: 'Tàu đi thẳng?', labelZh: '這班到沙崙嗎', zh: '請問這班區間車有到沙崙嗎？', vi: 'Cho hỏi chuyến tàu này có đi thẳng tới Shalun không?' },
+              { labelVi: 'Quẹt thẻ vào ga', labelZh: '刷悠遊卡進站', zh: '請問這裡可以直接刷悠遊卡進站嗎？', vi: 'Cho hỏi ở đây có thể quẹt thẻ EasyCard vào ga không?' },
+              { labelVi: 'Nạp tiền 100元', labelZh: '悠遊卡儲值', zh: '你好，我要儲值悠遊卡一百元，謝謝。', vi: 'Xin chào, tôi muốn nạp 100 tệ vào thẻ EasyCard, cảm ơn.' }
+            ],
+            btnTodoVi: 'Đã lên tàu',
+            btnTodoZh: '已上車',
+            btnDoneVi: 'Đã hoàn thành',
+            btnDoneZh: '已完成打卡'
+          },
+          {
+            id: 2,
+            shortZh: '沙崙',
+            shortVi: 'Shalun',
+            xp: 100,
+            type: 'walk',
+            tagLeft: '3 min',
+            title: '沙崙 ➔ 高鐵台南',
+            infoTextVi: 'Theo biển báo THSR / 高鐵',
+            infoTextZh: '跟著 THSR / 高鐵指標步行',
+            phrases: [
+              { labelVi: 'Lối đi sang 高鐵', labelZh: '高鐵站怎麼走', zh: '請問往高鐵台南站的方向怎麼走？', vi: 'Cho hỏi lối đi sang ga Cao Tốc Đài Nam hướng nào?' },
+              { labelVi: 'Quầy vé 高鐵', labelZh: '高鐵售票處', zh: '請問高鐵售票櫃檯在哪裡？', vi: 'Cho hỏi quầy bán vé tàu Cao Tốc ở đâu?' }
+            ],
+            btnTodoVi: 'Đã tới ga Cao Tốc',
+            btnTodoZh: '已到高鐵站',
+            btnDoneVi: 'Đã hoàn thành',
+            btnDoneZh: '已完成打卡'
+          },
+          {
+            id: 3,
+            shortZh: '高鐵台南',
+            shortVi: 'THSR',
+            xp: 200,
+            type: 'thsr',
+            tagLeft: 'THSR 高鐵 / 1h 40m',
+            seatPillVi: 'Tự do: Toa 10-12',
+            seatPillZh: '自由座 10-12車',
+            title: '高鐵台南 ➔ 台北',
+            infoTextVi: 'Mua vé giấy (Không quẹt thẻ)',
+            infoTextZh: '櫃檯購買紙本票（不刷悠遊卡）',
+            arrivalHintVi: 'Qua ga 板橋 (Banqiao) là tới 台北',
+            arrivalHintZh: '過「板橋」站，下一站就是台北',
+            showTimer: true,
+            phrases: [
+              { labelVi: 'Mua vé đi 台北', labelZh: '買到台北高鐵票', zh: '你好，我要買一張現在最快到台北的高鐵票，謝謝。', vi: 'Xin chào, tôi muốn mua 1 vé Cao Tốc đi Đài Bắc chuyến nhanh nhất.' },
+              { labelVi: 'Sân ga đi 台北', labelZh: '北上月台在哪', zh: '請問往台北的高鐵在第幾月台上車？', vi: 'Cho hỏi tàu Cao Tốc đi Đài Bắc lên ở sân ga số mấy?' }
+            ],
+            btnTodoVi: 'Đã lên Cao Tốc',
+            btnTodoZh: '已搭上高鐵',
+            btnDoneVi: 'Đã hoàn thành',
+            btnDoneZh: '已完成打卡'
+          },
+          {
+            id: 4,
+            shortZh: '台北',
+            shortVi: 'Taipei',
+            xp: 200,
+            type: 'destination',
+            title: '台北 Taipei Station',
+            showWestExitSign: true,
+            showExitNotes: true,
+            phrases: [
+              {
+                labelVi: 'Hỏi đường Cửa Tây (西出口)',
+                labelZh: '問路：往 1F 車站大廳西門',
+                zh: '你好，不好意思我剛到高鐵台北站，我要去一樓「車站大廳」的「西門（西一門／西三門）」找家人，請問該怎麼走呢？謝謝你！',
+                vi: 'Xin chào, tôi vừa tới ga Cao Tốc Đài Bắc, tôi muốn lên Sảnh chính tầng 1 Cửa Tây (西出口 / 西門) để gặp người nhà, xin hỏi đi đường nào ạ? Cảm ơn!',
+                staffHint: true
+              },
+              {
+                labelVi: 'Tôi đang ở đâu? (Hỏi vị trí)',
+                labelZh: '問路：我現在在哪個出口？',
+                zh: '不好意思，我迷路了，請問我現在在台北車站的哪個出口或哪個門附近？我想傳給家人看，謝謝！',
+                vi: 'Xin lỗi, tôi bị lạc rồi, xin hỏi hiện tại tôi đang ở gần lối ra (出口) hay cửa số mấy của ga Đài Bắc ạ? Tôi muốn nhắn cho người nhà xem, cảm ơn!',
+                staffHint: true
+              }
+            ],
+            btnTodoVi: 'Điểm danh',
+            btnTodoZh: '打卡',
+            btnDoneVi: '已完成打卡',
+            btnDoneZh: '已完成打卡'
+          }
+        ]
       },
-      zh: {
-        btnCopyLink: "複製連結",
-        btnEnableNotify: "開啟通知",
-        s1PlatformBadge: "第 1 月台",
-        s1Mission: "悠遊卡 / 搭 <b>區間車</b>",
-        s1DirectLink: "<div class='flex items-center gap-2 min-w-0'><svg class='w-3.5 h-3.5 text-mintDark shrink-0' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'><rect x='2' y='7' width='20' height='15' rx='2'/><polyline points='17 2 12 7 7 2'/></svg><span class='bg-white text-mintDark px-2 py-0.5 rounded-lg font-extrabold shrink-0'>沙崙</span><span class='truncate'>直達車</span></div><span class='bg-mintPrimary text-white px-2.5 py-1 rounded-xl text-[11px] font-extrabold shrink-0 flex items-center gap-1.5'><svg class='w-3 h-3 shrink-0' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg><span>時刻表</span><svg class='w-2.5 h-2.5 shrink-0' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/><polyline points='15 3 21 3 21 9'/><line x1='10' y1='14' x2='21' y2='3'/></svg></span>",
-        btnAskPlatform: "詢問第一月台",
-        btnAskTransfer: "確認直達沙崙",
-        btnAskSwipe: "刷卡進站",
-        btnTopup: "加值 100 元",
-        btnClearStage1: "打卡：已上車",
-        s2Mission: "出 <b>沙崙站</b> ➔ <b>高鐵 THSR</b>",
-        btnAskThsrWalk: "問路：轉搭高鐵去台北",
-        btnClearStage2: "打卡：已到高鐵站",
-        thsrEntryGuide: "<div class='flex items-center justify-between gap-1 flex-wrap'><span class='flex items-center gap-1.5 text-goldDark'><svg class='w-3.5 h-3.5 shrink-0' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'><path d='M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'/><path d='M13 5v2'/><path d='M13 17v2'/><path d='M13 11v2'/></svg> 售票機 / 櫃檯買票</span><span>➔ 插紙本票進站 (勿刷悠遊卡)</span></div>",
-        btnShowThsrCard: "出示買票去台北",
-        thsrNorthBadge: "北上 / 第 2 月台",
-        btnThsrPlatform: "北上月台",
-        btnThsrCar10: "自由座車廂",
-        seatNoticeHtml: "<div class='flex items-center gap-2'><span class='bg-lavenderPrimary text-white text-[9.5px] font-bold px-2 py-0.5 rounded-full shrink-0'>對號座</span><span>依票面座位入座</span></div><div class='flex items-center gap-2'><span class='bg-goldPrimary text-white text-[9.5px] font-bold px-2 py-0.5 rounded-full shrink-0'>自由座</span><span>有空位就坐 (客滿可能需站立)</span></div><div class='bg-skySoft text-inkNavy rounded-xl px-3 py-2 flex items-center gap-2'><svg class='w-3.5 h-3.5 text-skyPrimary shrink-0' viewBox='0 0 24 24' fill='currentColor'><path d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/></svg><span><b>博愛座:</b> 顏色不同，優先禮讓有需要的人</span></div>",
-        alarmNoticeBody: "抵達 <b class='bg-lavenderPrimary text-white px-2 py-0.5 rounded-lg'>台北</b>",
-        btnClearStage3: "打卡：已搭上高鐵",
-        btnClearStage4: "已抵達台北！",
-        btnTaipeiExit: "問路：往 1F 車站大廳西門",
-        simTitle: "高鐵購票練習",
-        simReset: "重新練習",
-        simStep1Label: "選擇目的地車站",
-        simStep2Label: "選擇車廂座位種類",
-        simNeedPay: "應付金額",
-        simInserted: "已投入金額",
-        simGateHint: "車票箭頭朝上插入閘門，並於前方取回車票",
-        filterAll: "全部",
-        tipsCardTitle: "悠遊卡 / 一卡通注意事項",
-        tipsThsrTicketNote: "高鐵 (購買紙本車票)",
-        gateGuideTitle: "進出站閘門方式",
-        gateCardDesc: "於閘門右側感應區刷卡",
-        gateTicketDesc: "箭頭朝上插入車票並於前方取回",
-        navRoute: "路線",
-        navSim: "購票",
-        navCards: "字卡",
-        navTips: "須知",
-        btnSpeak: "播放中文語音",
-        victoryTitle: "恭喜平安抵達台北！",
-        victoryDesc: "您已順利完成從永康到台北車站的全部轉乘任務！"
+      inbound: {
+        titleFrom: '台北',
+        titleTo: '永康',
+        steps: [
+          {
+            id: 1,
+            shortZh: '台北',
+            shortVi: 'Taipei',
+            xp: 200,
+            type: 'thsr',
+            tagLeft: 'THSR 高鐵 / 1h 40m',
+            seatPillVi: 'Tự do: Toa 10-12',
+            seatPillZh: '自由座 10-12車',
+            title: '台北 ➔ 高鐵台南',
+            infoTextVi: 'Mua vé giấy đi 台南',
+            infoTextZh: '購買往「台南」高鐵紙本票',
+            arrivalHintVi: 'Qua ga 嘉義 (Chiayi) là tới 台南',
+            arrivalHintZh: '過「嘉義」站，下一站就是台南',
+            showTimer: true,
+            phrases: [
+              { labelVi: 'Mua vé đi 台北', labelZh: '買到台北高鐵票', zh: '你好，我要買一張現在最快到台北的高鐵票，謝謝。', vi: 'Xin chào, tôi muốn mua 1 vé Cao Tốc đi Đài Bắc chuyến nhanh nhất.' },
+              { labelVi: 'Sân ga đi 台北', labelZh: '北上月台在哪', zh: '請問往台北的高鐵在第幾月台上車？', vi: 'Cho hỏi tàu Cao Tốc đi Đài Bắc lên ở sân ga số mấy?' }
+            ],
+            btnTodoVi: 'Đã lên Cao Tốc',
+            btnTodoZh: '已搭上高鐵',
+            btnDoneVi: 'Đã hoàn thành',
+            btnDoneZh: '已完成打卡'
+          },
+          {
+            id: 4,
+            shortZh: '台北',
+            shortVi: 'Taipei',
+            xp: 200,
+            type: 'destination',
+            title: '台北 Taipei Station',
+            showWestExitSign: true,
+            showExitNotes: true,
+            phrases: [
+              {
+                labelVi: 'Hỏi đường Cửa Tây (西出口)',
+                labelZh: '問路：往 1F 車站大廳西門',
+                zh: '你好，不好意思我剛到高鐵台北站，我要去一樓「車站大廳」的「西門（西一門／西三門）」找家人，請問該怎麼走呢？謝謝你！',
+                vi: 'Xin chào, tôi vừa tới ga Cao Tốc Đài Bắc, tôi muốn lên Sảnh chính tầng 1 Cửa Tây (西出口 / 西門) để gặp người nhà, xin hỏi đi đường nào ạ? Cảm ơn!',
+                staffHint: true
+              }
+            ],
+            btnTodoVi: 'Điểm danh',
+            btnTodoZh: '打卡',
+            btnDoneVi: '已完成打卡',
+            btnDoneZh: '已完成打卡'
+          }
+        ]
+      },
+      inbound: {
+        titleFrom: '台北',
+        titleTo: '永康',
+        steps: [
+          {
+            id: 1,
+            shortZh: '台北',
+            shortVi: 'Taipei',
+            xp: 200,
+            type: 'thsr',
+            tagLeft: 'THSR 高鐵 / 1h 40m',
+            title: '台北 ➔ 高鐵台南',
+            infoTextVi: 'Mua vé giấy đi 台南',
+            infoTextZh: '購買往「台南」高鐵紙本票',
+            showTimer: true,
+            phrases: [
+              { labelVi: 'Mua vé đi 台南', labelZh: '買到台南高鐵票', zh: '你好，我要買一張現在最快到台南的高鐵票，謝謝。', vi: 'Xin chào, tôi muốn mua 1 vé Cao Tốc đi Đài Nam chuyến nhanh nhất.' },
+              { labelVi: 'Sân ga đi 台南', labelZh: '南下月台在哪', zh: '請問往台南的高鐵在第幾月台上車？', vi: 'Cho hỏi tàu Cao Tốc đi Đài Nam lên ở sân ga số mấy?' }
+            ],
+            btnTodoVi: 'Đã lên Cao Tốc',
+            btnTodoZh: '已搭上高鐵',
+            btnDoneVi: 'Đã hoàn thành',
+            btnDoneZh: '已完成打卡'
+          },
+          {
+            id: 2,
+            shortZh: '高鐵台南',
+            shortVi: 'THSR',
+            xp: 100,
+            type: 'walk',
+            tagLeft: '3 min',
+            title: '高鐵台南 ➔ 沙崙',
+            infoTextVi: 'Theo biển báo TRA / 台鐵',
+            infoTextZh: '跟著 TRA / 台鐵指標步行',
+            phrases: [
+              { labelVi: 'Lối đi sang 台鐵', labelZh: '台鐵沙崙站怎麼走', zh: '請問往台鐵沙崙站轉乘區間車怎麼走？', vi: 'Cho hỏi lối đi sang ga tàu địa phương TRA Shalun hướng nào?' }
+            ],
+            btnTodoVi: 'Đã tới ga 沙崙',
+            btnTodoZh: '已到沙崙站',
+            btnDoneVi: 'Đã hoàn thành',
+            btnDoneZh: '已完成打卡'
+          },
+          {
+            id: 3,
+            shortZh: '沙崙',
+            shortVi: 'Shalun',
+            xp: 100,
+            type: 'tra',
+            tagLeft: 'TRA 區間車 / 25m',
+            platformPill: 'TRA',
+            title: '沙崙 ➔ 永康',
+            infoTextVi: 'EasyCard ➔ 區間車',
+            infoTextZh: '刷悠遊卡搭乘往永康區間車',
+            mintBadge: '永康',
+            mintTextVi: 'Qua ga 永康',
+            mintTextZh: '停靠永康站',
+            timetableUrl: 'https://trctrack.com/station/shalun?to=yongkang',
+            phrases: [
+              { labelVi: 'Tàu có qua 永康?', labelZh: '這班有到永康嗎', zh: '請問這班區間車有到永康站嗎？', vi: 'Cho hỏi chuyến tàu địa phương này có dừng ở ga Yongkang không?' },
+              { labelVi: 'Sân ga đi 永康', labelZh: '往永康月台在哪', zh: '請問往永康的區間車在哪個月台？', vi: 'Cho hỏi tàu đi Yongkang ở sân ga số mấy?' }
+            ],
+            btnTodoVi: 'Đã lên tàu về 永康',
+            btnTodoZh: '已搭上回永康區間車',
+            btnDoneVi: 'Đã hoàn thành',
+            btnDoneZh: '已完成打卡'
+          },
+          {
+            id: 4,
+            shortZh: '永康',
+            shortVi: 'Yongkang',
+            xp: 200,
+            type: 'destination',
+            title: '永康 Yongkang Station',
+            showHomeBanner: true,
+            phrases: [
+              {
+                labelVi: 'Hỏi lối ra ga 永康',
+                labelZh: '問路：永康車站出口',
+                zh: '你好，請問永康車站的出口在這一邊嗎？謝謝！',
+                vi: 'Xin chào, cho hỏi lối ra của ga Yongkang ở phía này phải không ạ? Cảm ơn!'
+              }
+            ],
+            btnTodoVi: 'Điểm danh về nhà',
+            btnTodoZh: '平安到家打卡',
+            btnDoneVi: '已完成打卡',
+            btnDoneZh: '已完成打卡'
+          }
+        ]
       }
     };
 
-    // ================= SOUND & TOAST HELPERS =================
-    function ensureAudioContext() {
-      try {
-        if (!audioCtx) {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          if (AudioCtx) audioCtx = new AudioCtx();
-        }
-        if (audioCtx && audioCtx.state === 'suspended') {
-          audioCtx.resume();
-        }
-      } catch (e) {}
-    }
+    // App State
+    let lang = 'VI';
+    let direction = 'outbound';
+    let roomCode = '521733';
+    let state = {
+      outbound: [false, false, false, false],
+      inbound: [false, false, false, false]
+    };
+    let notifyEnabled = false;
+    let eventSource = null;
+    let currentModalZh = '';
+    let timerSeconds = 6000; // 1 hour 40 minutes
+    let timerRunning = false;
+    let timerInterval = null;
 
-    function playSoftTone(type) {
-      try {
-        ensureAudioContext();
-        if (!audioCtx) return;
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        if (type === 'clear') {
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(523.25, now);
-          osc.frequency.setValueAtTime(659.25, now + 0.09);
-          osc.frequency.setValueAtTime(783.99, now + 0.18);
-          gain.gain.setValueAtTime(0.14, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
-          osc.start(now);
-          osc.stop(now + 0.42);
-        } else if (type === 'alarm') {
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(880, now);
-          osc.frequency.setValueAtTime(1046.5, now + 0.15);
-          osc.frequency.setValueAtTime(880, now + 0.3);
-          gain.gain.setValueAtTime(0.22, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
-          osc.start(now);
-          osc.stop(now + 0.65);
-        } else {
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(587.33, now);
-          gain.gain.setValueAtTime(0.1, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-          osc.start(now);
-          osc.stop(now + 0.2);
-        }
-      } catch (e) {}
-    }
-
-    let toastTimer = null;
-    function showToast(msg) {
-      const box = document.getElementById('toastBox');
-      const txt = document.getElementById('toastText');
-      if (!box || !txt) return;
-      txt.textContent = msg;
-      box.classList.remove('opacity-0', '-translate-y-2');
-      box.classList.add('opacity-100', 'translate-y-0');
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => {
-        box.classList.remove('opacity-100', 'translate-y-0');
-        box.classList.add('opacity-0', '-translate-y-2');
-      }, 2600);
-    }
-
-    // ================= LANGUAGE SWITCHER =================
-    function toggleLanguage() {
-      currentLang = currentLang === 'vi' ? 'zh' : 'vi';
-      document.getElementById('langFlag').textContent = currentLang === 'vi' ? '🇻🇳' : '🇹🇼';
-      document.getElementById('langLabel').textContent = currentLang === 'vi' ? 'VI' : '中文';
-
-      const dict = translations[currentLang];
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (dict[key]) {
-          el.innerHTML = dict[key];
-        }
-      });
-
-      renderAllCheckpoints();
-    }
-
-    // ================= LOCAL PROGRESS STORAGE =================
-    function saveLocalProgress() {
-      try {
-        localStorage.setItem('taipei_quest_progress', JSON.stringify({
-          steps: completedSteps,
-          bonusXp: bonusXp,
-          simRewardClaimed: simRewardClaimed
-        }));
-      } catch (e) {}
-    }
-
-    function loadLocalProgress() {
-      try {
-        const raw = localStorage.getItem('taipei_quest_progress');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed.steps) completedSteps = { ...completedSteps, ...parsed.steps };
-          if (typeof parsed.bonusXp === 'number') bonusXp = parsed.bonusXp;
-          if (typeof parsed.simRewardClaimed === 'boolean') simRewardClaimed = parsed.simRewardClaimed;
-        }
-      } catch (e) {}
-    }
-
-    function resetAllProgress() {
-      completedSteps = { 1: false, 2: false, 3: false, 4: false };
-      bonusXp = 0;
-      simRewardClaimed = false;
-      saveLocalProgress();
-      renderAllCheckpoints();
-      broadcastStep(0);
-      showToast(currentLang === 'vi' ? 'Đã đặt lại 0 XP ✓' : '已重置進度為 0 XP ✓');
-    }
+    // Initialize Application
+    window.addEventListener('DOMContentLoaded', () => {
+      initRoomCode();
+      loadSavedState();
+      renderAll();
+    });
 
     function initRoomCode() {
       try {
         const params = new URLSearchParams(window.location.search);
         const urlRoom = params.get('room');
+        const urlDir = params.get('dir');
         if (urlRoom && /^\d{6}$/.test(urlRoom)) {
           roomCode = urlRoom;
+          localStorage.setItem('taipei_quest_room', roomCode);
         } else {
-          const savedRoom = localStorage.getItem('taipei_quest_room');
-          if (savedRoom && /^\d{6}$/.test(savedRoom)) {
-            roomCode = savedRoom;
+          const stored = localStorage.getItem('taipei_quest_room');
+          if (stored && /^\d{6}$/.test(stored)) {
+            roomCode = stored;
+          } else {
+            roomCode = String(Math.floor(100000 + Math.random() * 900000));
+            localStorage.setItem('taipei_quest_room', roomCode);
           }
         }
-      } catch (e) {}
-      if (!roomCode) {
-        roomCode = String(Math.floor(100000 + Math.random() * 900000));
+        if (urlDir === 'inbound' || urlDir === 'in') {
+          direction = 'inbound';
+        }
+      } catch (e) {
+        roomCode = '521733';
       }
-      try {
-        localStorage.setItem('taipei_quest_room', roomCode);
-      } catch (e) {}
-      const badge = document.getElementById('roomCodeBadge');
-      if (badge) badge.textContent = `#${roomCode}`;
+      document.getElementById('roomCodeLabel').innerText = `#${roomCode}`;
+      syncUrlSilently();
     }
 
-    function toggleRoomInput() {
-      const box = document.getElementById('roomInputBox');
-      if (!box) return;
-      box.classList.toggle('hidden');
-      if (!box.classList.contains('hidden')) {
-        const inp = document.getElementById('manualRoomInput');
-        if (inp) {
-          inp.value = roomCode;
-          inp.focus();
+    function syncUrlSilently() {
+      try {
+        if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+          const url = new URL(window.location.href);
+          url.searchParams.set('room', roomCode);
+          url.searchParams.set('dir', direction);
+          window.history.replaceState({}, '', url.toString());
+        }
+      } catch (e) {
+        // Ignore in sandboxed iframe/blob preview
+      }
+    }
+
+    function loadSavedState() {
+      try {
+        const raw = localStorage.getItem(`taipei_quest_state_${roomCode}`);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed.outbound)) state.outbound = parsed.outbound;
+          if (Array.isArray(parsed.inbound)) state.inbound = parsed.inbound;
+        }
+      } catch (e) {}
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(`taipei_quest_state_${roomCode}`, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    // Toast Helper
+    function showToast(msg) {
+      const banner = document.getElementById('toastBanner');
+      document.getElementById('toastText').innerText = msg;
+      banner.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => banner.classList.add('hidden'), 2600);
+    }
+
+    // Language & Direction Switchers
+    function toggleLanguage() {
+      lang = lang === 'VI' ? 'ZH' : 'VI';
+      document.getElementById('langFlag').innerText = lang === 'VI' ? '🇻🇳' : '🇹🇼';
+      document.getElementById('langCode').innerText = lang === 'VI' ? 'VI' : '中文';
+      renderAll();
+    }
+
+    function switchDirection(newDir) {
+      direction = newDir;
+      syncUrlSilently();
+      renderAll();
+    }
+
+    // Bottom Navigation Tabs
+    function switchTab(tabName) {
+      const tabs = ['journey', 'tickets', 'cards', 'info'];
+      tabs.forEach(t => {
+        document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tabName);
+        const btn = document.getElementById(`nav-${t}`);
+        const lbl = document.getElementById(`navLabel${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (t === tabName) {
+          btn.className = 'px-4 py-2 rounded-full bg-[#3FB6F6] text-white text-xs font-extrabold flex items-center gap-1.5 transition-colors';
+          if (lbl) lbl.classList.remove('hidden');
+        } else {
+          btn.className = 'p-2.5 rounded-full text-slate-400 flex items-center gap-1.5 text-xs font-extrabold transition-colors';
+          if (lbl) lbl.classList.add('hidden');
+        }
+      });
+    }
+
+    // Step Completion & XP Calculation
+    function toggleStepDone(index) {
+      const arr = state[direction];
+      arr[index] = !arr[index];
+      saveState();
+      renderAll();
+
+      if (arr[index]) {
+        playChime();
+        const stepObj = JOURNEY_DATA[direction].steps[index];
+        publishSyncUpdate(stepObj.title);
+        if (index < 3) {
+          setTimeout(() => scrollToStep(index + 1), 260);
         }
       }
     }
 
-    function applyManualRoom() {
-      const inp = document.getElementById('manualRoomInput');
-      if (!inp) return;
-      const val = inp.value.trim();
-      if (!/^\d{6}$/.test(val)) {
-        showToast(currentLang === 'vi' ? 'Nhập 6 chữ số' : '請輸入 6 位數字代碼');
-        return;
+    // Render Main UI
+    function renderAll() {
+      const data = JOURNEY_DATA[direction];
+      const doneArr = state[direction];
+
+      // Header & Direction Tabs
+      document.getElementById('headerRouteTitle').innerText = `${data.titleFrom} ➔ ${data.titleTo}`;
+      document.getElementById('copyLinkLabel').innerText = lang === 'VI' ? 'Gửi link' : '複製連結';
+      document.getElementById('notifyLabel').innerText = notifyEnabled
+        ? (lang === 'VI' ? 'Đang bật' : '通知已開')
+        : (lang === 'VI' ? 'Báo chuông' : '開啟通知');
+
+      document.getElementById('navLabelJourney').innerText = lang === 'VI' ? 'Lộ trình' : '行程';
+      document.getElementById('navLabelTickets').innerText = lang === 'VI' ? 'Vé tàu' : '車票';
+      document.getElementById('navLabelCards').innerText = lang === 'VI' ? 'Thẻ chữ' : '字卡';
+      document.getElementById('navLabelInfo').innerText = lang === 'VI' ? 'Lưu ý' : '提醒';
+
+      const btnOut = document.getElementById('dirBtnOutbound');
+      const btnIn = document.getElementById('dirBtnInbound');
+      if (direction === 'outbound') {
+        btnOut.className = 'flex-1 py-2.5 rounded-full text-xs font-extrabold bg-[#45B6FE] text-white transition-colors';
+        btnIn.className = 'flex-1 py-2.5 rounded-full text-xs font-extrabold text-slate-500 transition-colors';
+      } else {
+        btnIn.className = 'flex-1 py-2.5 rounded-full text-xs font-extrabold bg-[#45B6FE] text-white transition-colors';
+        btnOut.className = 'flex-1 py-2.5 rounded-full text-xs font-extrabold text-slate-500 transition-colors';
       }
-      roomCode = val;
+
+      // Total XP for current direction
+      const totalXp = data.steps.reduce((sum, s, i) => sum + (doneArr[i] ? s.xp : 0), 0);
+      document.getElementById('xpValue').innerText = totalXp;
+
+      // Active Step Index (first incomplete step, or 3 if all done)
+      let activeIdx = doneArr.findIndex(v => !v);
+      if (activeIdx === -1) activeIdx = 3;
+
+      // Progress Line Width
+      const completedCount = doneArr.filter(Boolean).length;
+      const pct = completedCount === 0 ? 0 : Math.min(100, ((completedCount - 1) / 3) * 100);
+      document.getElementById('progressFillLine').style.width = `${pct}%`;
+
+      // Render 4 Flat Step Circles (Strictly NO shadows or glow)
+      const nodesEl = document.getElementById('stepNodesContainer');
+      nodesEl.innerHTML = data.steps.map((s, idx) => {
+        const isDone = doneArr[idx];
+        const isActive = idx === activeIdx && !isDone;
+        let circleClasses = 'w-10 h-10 rounded-full flex items-center justify-center text-sm font-extrabold transition-colors ';
+        let circleInner = s.id;
+
+        if (isDone) {
+          circleClasses += 'bg-[#4ED2CE] text-white';
+          circleInner = '✓';
+        } else if (isActive) {
+          circleClasses += 'bg-[#45B6FE] text-white';
+        } else {
+          circleClasses += 'bg-[#EDF4FA] text-[#98A4B3]';
+        }
+
+        const trainBadge = (idx === activeIdx) ? `
+          <div class="absolute -top-5 inset-x-0 flex justify-center pointer-events-none">
+            <svg class="w-4 h-4 train-float text-[#45B6FE]" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 10h14M9 17l-2 3m6-3l2 3"/><circle cx="8.5" cy="13.5" r="1" fill="currentColor"/><circle cx="15.5" cy="13.5" r="1" fill="currentColor"/></svg>
+          </div>
+        ` : '';
+
+        return `
+          <div onclick="scrollToStep(${idx})" class="relative flex flex-col items-center w-16 text-center cursor-pointer">
+            ${trainBadge}
+            <div class="${circleClasses}">${circleInner}</div>
+            <span class="mt-2 text-xs font-extrabold text-[#222B3A] leading-tight">${s.shortZh}</span>
+            <span class="text-[11px] font-medium text-[#8C97A8] leading-tight mt-0.5">${s.shortVi}</span>
+          </div>
+        `;
+      }).join('');
+
+      // Render Step Cards
+      const cardsEl = document.getElementById('cardsContainer');
+      cardsEl.innerHTML = data.steps.map((s, idx) => {
+        const isDone = doneArr[idx];
+        const isCurrentCard = idx === activeIdx && !isDone;
+        const cardStateClass = isDone ? 'card-done' : (isCurrentCard ? 'card-active' : '');
+
+        // Destination Card (Crisp Pastel Palette matching reference UI)
+        if (s.type === 'destination') {
+          const checkBtnClass = isDone
+            ? 'bg-[#E8FAF9] border border-[#B8EFEA] text-[#2CB5B0] rounded-full px-3.5 py-2 text-xs font-extrabold flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all'
+            : 'bg-[#F4F9FD] text-slate-600 rounded-full px-4 py-2 text-xs font-extrabold flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all';
+          const checkBtnLabel = isDone
+            ? `✓ ${lang === 'VI' ? s.btnDoneVi : s.btnDoneZh}`
+            : (lang === 'VI' ? s.btnTodoVi : s.btnTodoZh);
+
+          const westExitSignHtml = s.showWestExitSign ? `
+            <div class="bg-[#FFF7EB] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-[#F7AD3E] text-white flex items-center justify-center text-xl font-black shrink-0">↑</div>
+                <div class="min-w-0">
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-[#222B3A] font-black text-base tracking-wide whitespace-nowrap">西出口</span>
+                    <span class="text-[#D9820B] text-xs font-extrabold whitespace-nowrap">West exit</span>
+                  </div>
+                  <p class="text-slate-500 text-[11px] font-bold mt-0.5 whitespace-nowrap">1F 車站大廳 西一門 - 西三門</p>
+                </div>
+              </div>
+              <span class="bg-white text-[#D9820B] text-[11px] font-extrabold px-2.5 py-1 rounded-full whitespace-nowrap shrink-0">1F 大廳</span>
+            </div>
+          ` : '';
+
+          const exitNotesHtml = s.showExitNotes ? `
+            <div class="bg-[#F4F9FD] rounded-2xl p-4 space-y-2.5 text-xs font-bold text-[#222B3A]">
+              <div class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-lg bg-[#FFF7EB] text-[#D9820B] flex items-center justify-center text-xs shrink-0">🎫</span>
+                <span>${lang === 'VI' ? 'Đút vé giấy cao tốc để ra cổng (Không quẹt thẻ)' : '高鐵出站閘門要「插紙本票」（不要刷悠遊卡）'}</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-lg bg-[#EBF7FF] text-[#45B6FE] flex items-center justify-center text-xs shrink-0">↑</span>
+                <span>${lang === 'VI' ? 'Tìm cầu thang đi LÊN' : '下車後一定要找「往上走」的樓梯'}</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-lg bg-[#FEECEB] text-[#F48474] flex items-center justify-center text-xs shrink-0">✕</span>
+                <span>${lang === 'VI' ? 'Không đi ngược chiều' : '部分樓梯不通行，注意不要逆向'}</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-lg bg-[#EEF0FA] text-[#6C76C8] flex items-center justify-center text-xs shrink-0">👮</span>
+                <span>${lang === 'VI' ? 'Không biết đường thì hỏi nhân viên mặc đồng phục gần cổng' : '不會走時，可找閘門旁「穿制服工作人員」問路'}</span>
+              </div>
+            </div>
+          ` : '';
+
+          const homeBannerHtml = s.showHomeBanner ? `
+            <div class="bg-[#E8FAF9] rounded-2xl p-4 flex items-center gap-3 text-xs font-extrabold text-[#2CB5B0]">
+              <span class="text-xl">🏠</span>
+              <span>${lang === 'VI' ? 'Đã về tới ga 永康!' : '順利回到永康車站！'}</span>
+            </div>
+          ` : '';
+
+          const phraseBtnHtml = s.phrases.map(p => `
+            <button onclick="handlePhraseClick(this, '${escapeAttr(p.zh)}', '${escapeAttr(p.vi)}', ${Boolean(p.staffHint)})" class="w-full speech-btn rounded-2xl px-4 py-3.5 flex items-center justify-between gap-2 text-left">
+              <span class="text-xs font-extrabold text-[#222B3A] whitespace-nowrap truncate">${lang === 'VI' ? p.labelVi : p.labelZh}</span>
+              <svg class="w-5 h-5 text-[#6C76C8] shrink-0" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+            </button>
+          `).join('');
+
+          return `
+            <article id="step-card-${idx}" class="soft-card ${cardStateClass} p-5 space-y-3.5 transition-all">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-11 h-11 rounded-2xl bg-[#EEF0FA] text-[#6C76C8] flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8m-4-4v4m-5-9h10a2 2 0 002-2V5a1 1 0 00-1-1H6a1 1 0 00-1 1v5a2 2 0 002 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 7H4a2 2 0 00-2 2v1a3 3 0 003 3h1m13-6h1a2 2 0 012 2v1a3 3 0 01-3 3h-1"/></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <h2 class="text-[15px] font-extrabold text-[#222B3A] whitespace-nowrap">${s.title}</h2>
+                    <span class="text-xs font-extrabold text-[#6C76C8]">+${s.xp} XP</span>
+                  </div>
+                </div>
+                <button onclick="toggleStepDone(${idx})" class="${checkBtnClass}">${checkBtnLabel}</button>
+              </div>
+              ${westExitSignHtml}
+              ${exitNotesHtml}
+              ${homeBannerHtml}
+              ${phraseBtnHtml}
+            </article>
+          `;
+        }
+
+        // Standard Transport / Walking Card
+        let bannerBg = 'bg-[#EBF7FF]';
+        let tagColor = 'text-[#289EE8]';
+        let ctaBg = 'bg-[#45B6FE]';
+        let vehicleSvg = `
+          <svg class="w-12 h-10" viewBox="0 0 48 40" fill="none">
+            <rect x="6" y="8" width="36" height="22" rx="6" fill="#45B6FE"/>
+            <rect x="10" y="12" width="11" height="8" rx="2" fill="#EBF7FF"/>
+            <rect x="24" y="12" width="14" height="8" rx="2" fill="#EBF7FF"/>
+            <circle cx="15" cy="30" r="3" fill="#222B3A"/>
+            <circle cx="33" cy="30" r="3" fill="#222B3A"/>
+            <path d="M4 34h40" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        `;
+
+        if (s.type === 'walk') {
+          bannerBg = 'bg-[#E8FAF9]';
+          tagColor = 'text-[#2CB5B0]';
+          ctaBg = 'bg-[#4ED2CE]';
+          vehicleSvg = `
+            <div class="w-11 h-11 rounded-2xl bg-white/80 flex items-center justify-center text-xl">🚶‍♂️</div>
+          `;
+        } else if (s.type === 'thsr') {
+          bannerBg = 'bg-[#FFF7EB]';
+          tagColor = 'text-[#D9820B]';
+          ctaBg = 'bg-[#F7AD3E]';
+          vehicleSvg = `
+            <svg class="w-12 h-10" viewBox="0 0 48 40" fill="none">
+              <path d="M8 28C8 17 16 10 28 10H38C40.2 10 42 11.8 42 14V24C42 26.2 40.2 28 38 28H8Z" fill="#F7AD3E"/>
+              <path d="M12 22C13 17 17 14 23 14H36V20H12V22Z" fill="#FFFBEB"/>
+              <path d="M4 32h40" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          `;
+        }
+
+        const platformPillHtml = s.platformPill
+          ? `<span class="bg-white text-[#222B3A] text-[11px] font-extrabold px-2.5 py-0.5 rounded-full whitespace-nowrap">${s.platformPill}</span>`
+          : '';
+
+        const seatPillHtml = s.seatPillVi
+          ? `<span class="bg-white text-[#D9820B] text-[11px] font-extrabold px-2.5 py-0.5 rounded-full whitespace-nowrap">${lang === 'VI' ? s.seatPillVi : s.seatPillZh}</span>`
+          : '';
+
+        const arrivalHintHtml = s.arrivalHintVi ? `
+          <div class="bg-[#FFF7EB] rounded-2xl px-4 py-3 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-white text-[#F7AD3E] flex items-center justify-center shrink-0 text-sm">📢</div>
+            <span class="text-xs font-extrabold text-[#9C5E0C]">${lang === 'VI' ? s.arrivalHintVi : s.arrivalHintZh}</span>
+          </div>
+        ` : '';
+
+        const mintRowHtml = s.mintBadge ? `
+          <div class="bg-[#E8FAF9] rounded-2xl px-4 py-3 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <svg class="w-5 h-5 text-[#2CB5B0] shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path stroke-linecap="round" d="M8 3l4 3 4-3"/></svg>
+              <span class="bg-white text-[#2CB5B0] text-xs font-extrabold px-2.5 py-1 rounded-lg whitespace-nowrap">${s.mintBadge}</span>
+              <span class="text-xs font-extrabold text-[#222B3A] whitespace-nowrap">${lang === 'VI' ? s.mintTextVi : s.mintTextZh}</span>
+            </div>
+            <a href="${s.timetableUrl}" target="_blank" class="bg-[#4ED2CE] text-white text-[11px] font-extrabold px-3 py-1.5 rounded-full flex items-center gap-1 shrink-0 whitespace-nowrap">
+              <span>⏱</span>
+              <span>${lang === 'VI' ? 'Giờ tàu' : '時刻表'}</span>
+              <span>↗</span>
+            </a>
+          </div>
+        ` : '';
+
+        const timerRowHtml = s.showTimer ? `
+          <div class="bg-[#F4F9FD] rounded-2xl px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-[#FFF7EB] text-[#F7AD3E] flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 2"/></svg>
+              </div>
+              <span id="thsrTimerDisplay" class="text-sm font-black text-[#222B3A]">${formatSeconds(timerSeconds)}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="toggleThsrTimer()" class="bg-[#F7AD3E] text-white text-[11px] font-extrabold px-3.5 py-1.5 rounded-full whitespace-nowrap">
+                ${timerRunning ? (lang === 'VI' ? 'Tạm dừng' : '暫停') : (lang === 'VI' ? 'Bắt đầu' : '開始')}
+              </button>
+              <button onclick="resetThsrTimer()" class="bg-[#E6F0F8] text-slate-600 text-[11px] font-extrabold px-2.5 py-1.5 rounded-full">↻</button>
+            </div>
+          </div>
+        ` : '';
+
+        const phrasesGridHtml = s.phrases.map(p => `
+          <button onclick="handlePhraseClick(this, '${escapeAttr(p.zh)}', '${escapeAttr(p.vi)}', ${Boolean(p.staffHint)})" class="speech-btn rounded-2xl px-3.5 py-3.5 flex items-center justify-between gap-2 text-left">
+            <span class="text-xs font-extrabold text-[#222B3A] leading-snug">${lang === 'VI' ? p.labelVi : p.labelZh}</span>
+            <svg class="w-4 h-4 text-[#6C76C8] shrink-0" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+          </button>
+        `).join('');
+
+        const mainBtnClass = isDone
+          ? 'w-full py-3.5 rounded-full bg-[#E8FAF9] text-[#2CB5B0] font-extrabold text-sm flex items-center justify-center gap-2 transition-colors'
+          : `w-full py-3.5 rounded-full ${ctaBg} text-white font-extrabold text-sm flex items-center justify-center gap-2 active:scale-[0.99] transition-all`;
+
+        const mainBtnText = isDone
+          ? (lang === 'VI' ? s.btnDoneVi : s.btnDoneZh)
+          : (lang === 'VI' ? s.btnTodoVi : s.btnTodoZh);
+
+        return `
+          <article id="step-card-${idx}" class="soft-card ${cardStateClass} p-5 space-y-3 transition-all">
+            <div class="${bannerBg} rounded-2xl p-4 flex items-center justify-between gap-2">
+              <div class="space-y-1.5 min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="${tagColor} text-xs font-extrabold whitespace-nowrap">${s.tagLeft}</span>
+                  ${platformPillHtml}
+                  ${seatPillHtml}
+                  <span class="bg-white/90 text-[#289EE8] text-[11px] font-extrabold px-2.5 py-0.5 rounded-full whitespace-nowrap">+${s.xp} XP</span>
+                </div>
+                <h2 class="text-lg font-extrabold text-[#222B3A] whitespace-nowrap">${s.title}</h2>
+              </div>
+              <div class="shrink-0">${vehicleSvg}</div>
+            </div>
+
+            <div class="bg-[#F4F9FD] rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-[#EBF7FF] text-[#45B6FE] flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18"/></svg>
+              </div>
+              <span class="text-xs font-extrabold text-[#222B3A]">${lang === 'VI' ? s.infoTextVi : s.infoTextZh}</span>
+            </div>
+
+            ${arrivalHintHtml}
+            ${mintRowHtml}
+            ${timerRowHtml}
+
+            <div class="grid grid-cols-2 gap-2.5">
+              ${phrasesGridHtml}
+            </div>
+
+            <button onclick="toggleStepDone(${idx})" class="${mainBtnClass}">
+              <span class="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center text-[11px]">✓</span>
+              <span>${mainBtnText}</span>
+            </button>
+          </article>
+        `;
+      }).join('');
+
+      updateSecondaryTabsLanguage();
+      renderFlashcardsTab();
+    }
+
+    function updateSecondaryTabsLanguage() {
+      document.getElementById('ticketTraTitle').innerText = lang === 'VI' ? 'Thẻ EasyCard' : 'EasyCard 悠遊卡';
+      document.getElementById('ticketTraDesc').innerText = lang === 'VI'
+        ? '永康 ➔ 沙崙: Quẹt thẻ EasyCard ở cổng vào và cổng ra.'
+        : '永康 ➔ 沙崙：直接刷悠遊卡進出站即可。';
+      document.getElementById('ticketThsrTitle').innerText = lang === 'VI' ? 'Vé giấy tại quầy' : '紙本車票';
+      document.getElementById('ticketThsrDesc').innerText = lang === 'VI'
+        ? 'Tàu Cao Tốc (高鐵): Mua vé giấy tại quầy và giữ vé để ra cổng.'
+        : '高鐵需至櫃檯購買紙本車票，出站時需插入票卡。';
+
+      document.getElementById('infoTitle').innerText = lang === 'VI' ? 'Lưu ý tại ga Đài Bắc' : '台北車站下車提醒';
+      document.getElementById('infoTimetableLabel').innerText = lang === 'VI' ? '⏱ Giờ tàu 永康 ➔ 沙崙' : '⏱ 永康 ➔ 沙崙 時刻表';
+      document.getElementById('infoNotesList').innerHTML = `
+        <div class="flex items-center gap-2.5"><span>🎫</span><span>${lang === 'VI' ? 'Đút vé giấy cao tốc để ra cổng (Không quẹt thẻ)' : '高鐵出站閘門要「插紙本票」（不要刷悠遊卡）'}</span></div>
+        <div class="flex items-center gap-2.5"><span>⬆️</span><span>${lang === 'VI' ? 'Tìm cầu thang đi LÊN' : '下車後一定要找「往上走」的樓梯'}</span></div>
+        <div class="flex items-center gap-2.5"><span>🚫</span><span>${lang === 'VI' ? 'Không đi ngược chiều' : '部分樓梯不通行，注意不要逆向'}</span></div>
+        <div class="flex items-center gap-2.5"><span>👮</span><span>${lang === 'VI' ? 'Không biết đường thì hỏi nhân viên mặc đồng phục gần cổng' : '不會走時，可找閘門旁「穿制服工作人員」問路'}</span></div>
+      `;
+    }
+
+    function renderFlashcardsTab() {
+      const container = document.getElementById('flashcardListContainer');
+      const allSteps = JOURNEY_DATA[direction].steps;
+      let html = '';
+      allSteps.forEach(step => {
+        step.phrases.forEach(p => {
+          html += `
+            <div onclick="openFlashcard('${escapeAttr(p.zh)}', '${escapeAttr(p.vi)}', ${Boolean(p.staffHint)})" class="soft-card p-5 space-y-2 cursor-pointer active:scale-[0.99] transition-transform">
+              <div class="flex items-center justify-between">
+                <span class="bg-[#E9F6FE] text-[#1D9CE0] text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">${step.title}</span>
+                <svg class="w-5 h-5 text-[#6E7AC2]" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+              </div>
+              <p class="text-base font-black text-[#222B3A] leading-snug">${p.zh}</p>
+              ${lang === 'VI' ? `<p class="text-xs font-semibold text-slate-500">${p.vi}</p>` : ''}
+            </div>
+          `;
+        });
+      });
+      container.innerHTML = html;
+    }
+
+    // Speech Synthesis & Flashcard Modal
+    function handlePhraseClick(btnEl, zhText, viText, staffHint) {
+      if (btnEl) {
+        btnEl.classList.add('tts-active');
+        setTimeout(() => btnEl.classList.remove('tts-active'), 2000);
+      }
+      speakChinese(zhText);
+      openFlashcard(zhText, viText, staffHint);
+    }
+
+    function speakChinese(text) {
       try {
-        localStorage.setItem('taipei_quest_room', roomCode);
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.lang = 'zh-TW';
+          utter.rate = 0.88;
+          window.speechSynthesis.speak(utter);
+        }
       } catch (e) {}
-      document.getElementById('roomCodeBadge').textContent = `#${roomCode}`;
-      document.getElementById('roomInputBox').classList.add('hidden');
-      connectRealtimeSync();
-      showToast(`#${roomCode} ✓`);
     }
 
-    function copySyncLink() {
-      const baseUrl = window.location.href.split('?')[0];
-      const shareUrl = `${baseUrl}?room=${roomCode}`;
-      const tempInput = document.createElement('input');
-      tempInput.value = shareUrl;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      tempInput.setSelectionRange(0, 99999);
+    function openFlashcard(zhText, viText, staffHint) {
+      currentModalZh = zhText;
+      document.getElementById('modalZhText').innerText = zhText;
+      document.getElementById('modalViText').innerText = viText;
+      document.getElementById('modalStaffHint').classList.toggle('hidden', !staffHint);
+      document.getElementById('flashcardModal').classList.remove('hidden');
+    }
+
+    function openSosFlashcard() {
+      const zh = '你好，我是越南人，我不會說中文，請幫幫我聯絡我的家人，謝謝！';
+      const vi = 'Xin chào, tôi là người Việt Nam, tôi không biết nói tiếng Trung, xin hãy giúp tôi liên lạc với người nhà, cảm ơn!';
+      speakChinese(zh);
+      openFlashcard(zh, vi, false);
+    }
+
+    function replayModalAudio() {
+      if (currentModalZh) speakChinese(currentModalZh);
+    }
+
+    function hideFlashcardModal() {
+      document.getElementById('flashcardModal').classList.add('hidden');
+    }
+
+    function closeFlashcardModal(e) {
+      if (e.target.id === 'flashcardModal') hideFlashcardModal();
+    }
+
+    // THSR 1h 40m Countdown Timer
+    function formatSeconds(sec) {
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function toggleThsrTimer() {
+      if (timerRunning) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+      } else {
+        timerRunning = true;
+        timerInterval = setInterval(() => {
+          if (timerSeconds > 0) {
+            timerSeconds--;
+            const el = document.getElementById('thsrTimerDisplay');
+            if (el) el.innerText = formatSeconds(timerSeconds);
+          } else {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            playChime();
+            showToast('⏰ Sắp tới ga! / 即將到站！');
+          }
+        }, 1000);
+      }
+      renderAll();
+    }
+
+    function resetThsrTimer() {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      timerSeconds = 6000;
+      renderAll();
+    }
+
+    // Custom Reset & Room Code Modals
+    function promptResetProgress() {
+      document.getElementById('resetModalTitle').innerText = lang === 'VI' ? 'Đặt lại tiến độ chặng này?' : '重置目前方向進度？';
+      document.getElementById('resetModal').classList.remove('hidden');
+    }
+
+    function closeResetModal() {
+      document.getElementById('resetModal').classList.add('hidden');
+    }
+
+    function confirmResetProgress() {
+      state[direction] = [false, false, false, false];
+      saveState();
+      closeResetModal();
+      renderAll();
+      showToast(lang === 'VI' ? 'Đã đặt lại tiến độ' : '已重置進度');
+    }
+
+    function openRoomCodeModal() {
+      document.getElementById('roomCodeInput').value = roomCode;
+      document.getElementById('roomModal').classList.remove('hidden');
+    }
+
+    function closeRoomCodeModal() {
+      document.getElementById('roomModal').classList.add('hidden');
+    }
+
+    function saveCustomRoomCode() {
+      const val = document.getElementById('roomCodeInput').value.trim();
+      if (/^\d{6}$/.test(val)) {
+        roomCode = val;
+        try { localStorage.setItem('taipei_quest_room', roomCode); } catch (e) {}
+        document.getElementById('roomCodeLabel').innerText = `#${roomCode}`;
+        syncUrlSilently();
+        loadSavedState();
+        renderAll();
+        closeRoomCodeModal();
+        showToast(`#${roomCode}`);
+      } else {
+        showToast(lang === 'VI' ? 'Nhập đúng 6 chữ số' : '請輸入 6 位數字');
+      }
+    }
+
+    // Copy Shareable Link & ntfy.sh Sync
+    function copyShareLink() {
+      let shareUrl = '';
       try {
-        document.execCommand('copy');
-      } catch (e) {}
-      document.body.removeChild(tempInput);
-      playSoftTone('tap');
-      showToast(currentLang === 'vi' ? `Đã sao chép link #${roomCode} ✓` : `已複製同步連結 #${roomCode} ✓`);
-    }
+        if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+          const url = new URL(window.location.href);
+          url.searchParams.set('room', roomCode);
+          url.searchParams.set('dir', direction);
+          shareUrl = url.toString();
+        } else {
+          shareUrl = `https://amberyehhh.github.io/taipei-guide/?room=${roomCode}&dir=${direction}`;
+        }
+      } catch (e) {
+        shareUrl = `https://amberyehhh.github.io/taipei-guide/?room=${roomCode}&dir=${direction}`;
+      }
 
-    // ================= REAL-TIME FAMILY SYNC & NOTIFICATIONS =================
-    function enableNotifications() {
-      ensureAudioContext();
-      notifyEnabled = true;
-      const btn = document.getElementById('notifyToggleBtn');
-      const txt = document.getElementById('notifyBtnText');
-      if (btn) {
-        btn.classList.remove('bg-skyPrimary');
-        btn.classList.add('bg-mintPrimary');
-      }
-      if (txt) {
-        txt.textContent = currentLang === 'vi' ? 'Đang bật' : '通知已開';
-      }
-      if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission().catch(() => {});
-      }
-      playSoftTone('clear');
-      showToast(currentLang === 'vi' ? 'Đã bật chuông báo đồng bộ 🔔' : '已開啟即時到站通知 🔔');
-    }
-
-    function triggerArrivalAlert(step) {
-      const label = checkpointLabels[step] ? checkpointLabels[step][currentLang] : `#${step}`;
-      playSoftTone('clear');
-      showToast(currentLang === 'vi' ? `📍 Đã check-in: ${label}` : `📍 弟弟已打卡：${label}`);
-      if (notifyEnabled && 'Notification' in window && Notification.permission === 'granted') {
-        try {
-          new Notification('TAIPEI QUEST 🚆', {
-            body: currentLang === 'vi' ? `Đã check-in tại ${label}` : `弟弟已抵達並打卡：${label}`
-          });
-        } catch (e) {}
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          showToast(lang === 'VI' ? 'Đã sao chép link!' : '已複製連結！');
+        }).catch(() => fallbackCopyText(shareUrl));
+      } else {
+        fallbackCopyText(shareUrl);
       }
     }
 
-    function connectRealtimeSync() {
-      if (eventSource) {
-        try { eventSource.close(); } catch (e) {}
+    function fallbackCopyText(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      showToast(lang === 'VI' ? 'Đã sao chép link!' : '已複製連結！');
+    }
+
+    function toggleNotifications() {
+      notifyEnabled = !notifyEnabled;
+      const btn = document.getElementById('notifyBtn');
+      if (notifyEnabled) {
+        btn.className = 'bg-[#4AC7C3] text-white text-[11px] font-extrabold px-3 py-1.5 rounded-full flex items-center gap-1 shrink-0 transition-colors';
+        startNtfySubscription();
+        playChime();
+        showToast(lang === 'VI' ? 'Đã bật thông báo' : '已開啟同步通知');
+      } else {
+        btn.className = 'bg-[#3FB6F6] text-white text-[11px] font-extrabold px-3 py-1.5 rounded-full flex items-center gap-1 shrink-0 transition-colors';
+        if (eventSource) {
+          eventSource.close();
+          eventSource = null;
+        }
       }
+      renderAll();
+    }
+
+    function startNtfySubscription() {
       try {
-        eventSource = new EventSource(`https://ntfy.sh/taipei_quest_${roomCode}/sse`);
-        eventSource.onmessage = (event) => {
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource(`https://ntfy.sh/taipei-quest-${roomCode}/sse`);
+        eventSource.onmessage = (e) => {
           try {
-            const payload = JSON.parse(event.data);
-            if (!payload || !payload.message) return;
-            const msg = JSON.parse(payload.message);
-            if (msg.sender === clientId) return;
-            if (msg.steps) {
-              completedSteps = { ...completedSteps, ...msg.steps };
-              saveLocalProgress();
-              renderAllCheckpoints();
-              if (msg.latestStep && completedSteps[msg.latestStep]) {
-                triggerArrivalAlert(msg.latestStep);
-              }
+            const payload = JSON.parse(e.data);
+            if (payload && payload.message) {
+              playChime();
+              showToast(`🔔 ${payload.message}`);
             }
-          } catch (e) {}
+          } catch (err) {}
         };
       } catch (e) {}
     }
 
-    function broadcastStep(latestStep) {
+    function publishSyncUpdate(stepTitle) {
       try {
-        fetch(`https://ntfy.sh/taipei_quest_${roomCode}`, {
+        fetch(`https://ntfy.sh/taipei-quest-${roomCode}`, {
           method: 'POST',
-          body: JSON.stringify({
-            sender: clientId,
-            steps: completedSteps,
-            latestStep: latestStep,
-            ts: Date.now()
-          })
+          body: `✓ ${stepTitle}`
         }).catch(() => {});
       } catch (e) {}
     }
 
-    // ================= CHECKPOINT TOGGLE & RENDERING =================
-    function toggleStep(step) {
-      ensureAudioContext();
-      completedSteps[step] = !completedSteps[step];
-      saveLocalProgress();
-      renderAllCheckpoints();
-      broadcastStep(completedSteps[step] ? step : 0);
-
-      if (completedSteps[step]) {
-        playSoftTone('clear');
-        const badge = document.getElementById('xpBadge');
-        if (badge) {
-          badge.classList.remove('animate-xp');
-          void badge.offsetWidth;
-          badge.classList.add('animate-xp');
-        }
-
-        if (step === 4) {
-          triggerConfetti();
-          setTimeout(() => {
-            const vm = document.getElementById('victoryModal');
-            if (vm) vm.classList.remove('hidden');
-          }, 350);
-        } else {
-          const nextCard = document.getElementById(`stageCard-${step + 1}`);
-          if (nextCard) {
-            setTimeout(() => {
-              nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 220);
-          }
-        }
-      } else {
-        playSoftTone('tap');
-      }
-    }
-
-    function renderAllCheckpoints() {
-      const checkSvg = '<svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-      const btnCheckSvg = '<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-      const btnCircleSvg = '<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>';
-
-      let totalXp = bonusXp;
-      if (completedSteps[1]) totalXp += 100;
-      if (completedSteps[2]) totalXp += 100;
-      if (completedSteps[3]) totalXp += 100;
-      if (completedSteps[4]) totalXp += 200;
-
-      const xpEl = document.getElementById('xpValue');
-      if (xpEl) xpEl.textContent = totalXp;
-      const vicXp = document.getElementById('victoryXpTotal');
-      if (vicXp) vicXp.textContent = totalXp;
-
-      const completedCount = [1, 2, 3, 4].filter(s => completedSteps[s]).length;
-      const lvlBadge = document.getElementById('playerLevelBadge');
-      if (lvlBadge) lvlBadge.textContent = `LV.${Math.min(4, completedCount + 1)}`;
-
-      // Determine current active step (first uncompleted step)
-      let activeStep = 4;
-      for (let s = 1; s <= 4; s++) {
-        if (!completedSteps[s]) {
-          activeStep = s;
-          break;
-        }
-      }
-
-      // Update progress line cleanly across the 3 segments between circles 1-4
-      const progressBar = document.getElementById('progressBar');
-      if (progressBar) {
-        const segmentPercent = completedCount === 0 ? 0 : completedCount === 1 ? 33.33 : completedCount === 2 ? 66.66 : 100;
-        progressBar.style.width = `${segmentPercent}%`;
-      }
-
-      const stageBtnDefaults = {
-        1: {
-          bg: 'bg-skyPrimary',
-          label: translations[currentLang].btnClearStage1
-        },
-        2: {
-          bg: 'bg-mintPrimary',
-          label: translations[currentLang].btnClearStage2
-        },
-        3: {
-          bg: 'bg-goldPrimary',
-          label: translations[currentLang].btnClearStage3
-        },
-        4: {
-          bg: 'bg-lavenderPrimary',
-          label: translations[currentLang].btnClearStage4
-        }
-      };
-
-      for (let s = 1; s <= 4; s++) {
-        const isDone = !!completedSteps[s];
-        const isCurrent = !isDone && s === activeStep;
-        const marker = document.getElementById(`heroMarker-${s}`);
-        const circle = document.getElementById(`stepCircle-${s}`);
-        const numEl = document.getElementById(`stepNum-${s}`);
-        const card = document.getElementById(`stageCard-${s}`);
-        const btn = document.getElementById(`stageClearBtn-${s}`);
-
-        if (marker) {
-          if (isCurrent) {
-            marker.classList.remove('invisible');
-          } else {
-            marker.classList.add('invisible');
-          }
-        }
-
-        if (circle && numEl) {
-          if (isDone) {
-            circle.className = 'w-10 h-10 rounded-full bg-mintPrimary text-white flex items-center justify-center font-display font-bold text-sm transition-all';
-            numEl.innerHTML = checkSvg;
-          } else if (isCurrent) {
-            const activeBg = s === 1 ? 'bg-skyPrimary' : s === 2 ? 'bg-mintPrimary' : s === 3 ? 'bg-goldPrimary' : 'bg-lavenderPrimary';
-            circle.className = `w-10 h-10 rounded-full ${activeBg} text-white flex items-center justify-center font-display font-bold text-sm transition-all`;
-            numEl.textContent = String(s);
-          } else {
-            const idleBg = s === 4 ? 'bg-lavenderSoft text-lavenderPrimary' : 'bg-skySoft text-inkMuted';
-            circle.className = `w-10 h-10 rounded-full ${idleBg} flex items-center justify-center font-display font-bold text-sm transition-all`;
-            numEl.textContent = String(s);
-          }
-        }
-
-        if (card) {
-          if (isDone) {
-            card.classList.remove('opacity-65');
-            card.classList.add('opacity-90');
-          } else if (isCurrent) {
-            card.classList.remove('opacity-65', 'opacity-90');
-          } else {
-            card.classList.remove('opacity-90');
-            card.classList.add('opacity-65');
-          }
-        }
-
-        if (btn) {
-          const doneLabel = currentLang === 'vi' ? 'Đã hoàn thành' : '已完成打卡';
-          if (s === 4) {
-            if (isDone) {
-              btn.className = 'px-4 py-2.5 rounded-2xl bg-mintSoft text-mintDark border border-mintPrimary/30 font-bold text-xs shrink-0 whitespace-nowrap flex items-center gap-1.5 active:scale-95 transition';
-              btn.innerHTML = `${btnCheckSvg}<span>${doneLabel}</span>`;
-            } else {
-              btn.className = 'px-4 py-2.5 rounded-2xl bg-lavenderPrimary text-white font-bold text-xs shrink-0 whitespace-nowrap active:scale-95 transition';
-              btn.innerHTML = `<span>${stageBtnDefaults[4].label}</span>`;
-            }
-          } else {
-            if (isDone) {
-              btn.className = 'w-full py-3 rounded-2xl bg-mintSoft text-mintDark border border-mintPrimary/30 font-bold text-xs flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98] transition';
-              btn.innerHTML = `${btnCheckSvg}<span>${doneLabel}</span>`;
-            } else {
-              btn.className = `w-full py-3 rounded-2xl ${stageBtnDefaults[s].bg} text-white font-bold text-xs flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98] transition`;
-              btn.innerHTML = `${btnCircleSvg}<span>${stageBtnDefaults[s].label}</span>`;
-            }
-          }
-        }
-      }
-    }
-
-    // ================= 1H 40M ARRIVAL COUNTDOWN TIMER =================
-    function formatDuration(totalSec) {
-      const hrs = Math.floor(totalSec / 3600);
-      const mins = Math.floor((totalSec % 3600) / 60);
-      const secs = totalSec % 60;
-      return `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    }
-
-    function toggleAlarmTimer() {
-      ensureAudioContext();
-      const btn = document.getElementById('alarmTimerBtn');
-      const txt = document.getElementById('alarmTimerText');
-
-      if (alarmRunning) {
-        clearInterval(alarmInterval);
-        alarmRunning = false;
-        if (btn) {
-          btn.classList.remove('bg-mintPrimary');
-          btn.classList.add('bg-skyPrimary');
-        }
-        playSoftTone('tap');
-        showToast(currentLang === 'vi' ? 'Đã tạm dừng hẹn giờ' : '已暫停下車倒數');
-        return;
-      }
-
-      if (alarmRemainingSec <= 0) {
-        alarmRemainingSec = 100 * 60;
-      }
-
-      alarmRunning = true;
-      if (btn) {
-        btn.classList.remove('bg-skyPrimary');
-        btn.classList.add('bg-mintPrimary');
-      }
-      playSoftTone('clear');
-      showToast(currentLang === 'vi' ? 'Đang đếm ngược 1h 40m tới Đài Bắc ⏰' : '已啟動 1 小時 40 分下車倒數 ⏰');
-
-      alarmInterval = setInterval(() => {
-        alarmRemainingSec -= 1;
-        if (txt) txt.textContent = formatDuration(Math.max(0, alarmRemainingSec));
-
-        if (alarmRemainingSec <= 0) {
-          clearInterval(alarmInterval);
-          alarmRunning = false;
-          if (btn) {
-            btn.classList.remove('bg-mintPrimary');
-            btn.classList.add('bg-peachPrimary');
-          }
-          playSoftTone('alarm');
-          showToast(currentLang === 'vi' ? '🔔 Sắp tới ga Đài Bắc (台北)!' : '🔔 時間到！準備在台北站下車！');
-          if (notifyEnabled && 'Notification' in window && Notification.permission === 'granted') {
-            try {
-              new Notification('TAIPEI QUEST 🚄', {
-                body: currentLang === 'vi' ? 'Chuẩn bị xuống ga Đài Bắc (台北)!' : '高鐵即將抵達台北站，請準備下車！'
-              });
-            } catch (e) {}
-          }
-        }
-      }, 1000);
-    }
-
-    // ================= BOTTOM TAB NAVIGATION =================
-    function switchTab(tabName) {
-      const tabs = ['route', 'simulator', 'staff', 'tips'];
-      tabs.forEach(t => {
-        const section = document.getElementById(`tab-${t}`);
-        const navBtn = document.getElementById(`nav-${t}`);
-        if (section) {
-          if (t === tabName) {
-            section.classList.remove('hidden');
-          } else {
-            section.classList.add('hidden');
-          }
-        }
-        if (navBtn) {
-          const label = navBtn.querySelector('.nav-label');
-          if (t === tabName) {
-            navBtn.className = 'flex items-center gap-2 px-4 py-2.5 rounded-full bg-skyPrimary text-white font-bold text-xs transition-all';
-            if (label) label.classList.remove('hidden');
-          } else {
-            navBtn.className = 'flex items-center gap-2 px-3.5 py-2.5 rounded-full text-inkMuted hover:bg-skySoft font-bold text-xs transition-all';
-            if (label) label.classList.add('hidden');
-          }
-        }
-      });
-      playSoftTone('tap');
-    }
-
-    // ================= FLASHCARD CATEGORY FILTER =================
-    function filterCards(category) {
-      const filters = ['all', 'tra', 'thsr', 'card'];
-      filters.forEach(f => {
-        const btn = document.getElementById(`filter-${f}`);
-        if (!btn) return;
-        if (f === category) {
-          btn.className = 'px-3.5 py-2 rounded-full bg-skyPrimary text-white text-xs font-bold shrink-0 transition';
-        } else {
-          btn.className = 'px-3.5 py-2 rounded-full bg-white text-inkMuted shadow-soft text-xs font-bold shrink-0 transition';
-        }
-      });
-
-      document.querySelectorAll('.flashcard-item').forEach(card => {
-        const cat = card.getAttribute('data-cat');
-        if (category === 'all' || cat === category) {
-          card.classList.remove('hidden');
-        } else {
-          card.classList.add('hidden');
-        }
-      });
-    }
-
-    // ================= CHINESE TEXT-TO-SPEECH & MODALS =================
-    function speakChinese(text, btnEl) {
-      if (btnEl) {
-        btnEl.classList.add('speech-btn-active');
-        setTimeout(() => {
-          btnEl.classList.remove('speech-btn-active');
-        }, 2000);
-      }
-
+    function playChime() {
       try {
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = 'zh-TW';
-          utterance.rate = 0.92;
-          const voices = window.speechSynthesis.getVoices();
-          const twVoice = voices.find(v => v.lang && (v.lang.includes('zh-TW') || v.lang.includes('zh_TW'))) ||
-                          voices.find(v => v.lang && v.lang.includes('zh'));
-          if (twVoice) utterance.voice = twVoice;
-          window.speechSynthesis.speak(utterance);
-        }
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(660, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.14);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
       } catch (e) {}
     }
 
-    function openShowModal(title, zhText, viText, btnEl) {
-      currentModalChinese = zhText;
-      const titleEl = document.getElementById('modalTitle');
-      const zhEl = document.getElementById('modalChineseText');
-      const viEl = document.getElementById('modalViText');
-      const modal = document.getElementById('showModal');
-
-      if (titleEl) titleEl.textContent = title;
-      if (zhEl) zhEl.textContent = zhText;
-      if (viEl) viEl.textContent = viText;
-      if (modal) modal.classList.remove('hidden');
-
-      speakChinese(zhText, btnEl);
+    function scrollToStep(idx) {
+      const target = document.getElementById(`step-card-${idx}`);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    function speakCurrentModal(btnEl) {
-      if (currentModalChinese) {
-        speakChinese(currentModalChinese, btnEl);
-      }
+    function escapeAttr(str) {
+      return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
     }
-
-    function openEmergencyModal(btnEl) {
-      const modal = document.getElementById('emergencyModal');
-      if (modal) modal.classList.remove('hidden');
-      speakChinese('你好，不好意思我聽不懂中文，請問這裡是哪一站呢？我想去『台北』，請問該怎麼搭車？謝謝你！', btnEl);
-    }
-
-    function closeModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) modal.classList.add('hidden');
-      try {
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-        }
-      } catch (e) {}
-    }
-
-    function closeModalOnBackdrop(event, modalId) {
-      if (event.target && event.target.id === modalId) {
-        closeModal(modalId);
-      }
-    }
-
-    // ================= THSR TICKET MACHINE SIMULATOR =================
-    function resetSimulator() {
-      simPrice = 1350;
-      simPaid = 0;
-      simSeatType = '對號座';
-      const badge = document.getElementById('simStepBadge');
-      if (badge) badge.textContent = '1 / 3';
-      ['sim-step-1', 'sim-step-2', 'sim-step-3', 'sim-step-4'].forEach((id, idx) => {
-        const el = document.getElementById(id);
-        if (el) {
-          if (idx === 0) el.classList.remove('hidden');
-          else el.classList.add('hidden');
-        }
-      });
-    }
-
-    function simWrongStation() {
-      playSoftTone('tap');
-      showToast(currentLang === 'vi' ? 'Chọn ga 台北 (Taipei) nhé!' : '請選擇終點站「台北」！');
-    }
-
-    function simSelectStation() {
-      playSoftTone('clear');
-      document.getElementById('sim-step-1').classList.add('hidden');
-      document.getElementById('sim-step-2').classList.remove('hidden');
-      document.getElementById('simStepBadge').textContent = '2 / 3';
-    }
-
-    function simSelectSeat(type, price) {
-      simPrice = price;
-      simPaid = 0;
-      simSeatType = type === 'reserved' ? '對號座' : '自由座';
-      playSoftTone('clear');
-      document.getElementById('sim-step-2').classList.add('hidden');
-      document.getElementById('sim-step-3').classList.remove('hidden');
-      document.getElementById('simStepBadge').textContent = '3 / 3';
-      document.getElementById('simPriceDisplay').textContent = `${simPrice.toLocaleString()} NTD`;
-      document.getElementById('simPaidDisplay').textContent = '0 NTD';
-    }
-
-    function simInsertBill(amount) {
-      simPaid += amount;
-      document.getElementById('simPaidDisplay').textContent = `${simPaid.toLocaleString()} NTD`;
-      if (simPaid >= simPrice) {
-        const change = simPaid - simPrice;
-        playSoftTone('clear');
-        document.getElementById('sim-step-3').classList.add('hidden');
-        document.getElementById('sim-step-4').classList.remove('hidden');
-        document.getElementById('simStepBadge').textContent = 'OK';
-        document.getElementById('simTicketTypeBadge').textContent = simSeatType;
-        document.getElementById('simChangeText').textContent = currentLang === 'vi' ? `Tiền thừa: ${change} NTD` : `找零: ${change} NTD`;
-
-        if (!simRewardClaimed) {
-          simRewardClaimed = true;
-          bonusXp += 50;
-          saveLocalProgress();
-          renderAllCheckpoints();
-          showToast('+50 XP ✓');
-        }
-      } else {
-        playSoftTone('tap');
-      }
-    }
-
-    // ================= CELEBRATION CONFETTI =================
-    function triggerConfetti() {
-      const colors = ['#4BB4F8', '#46CBBF', '#F8B53B', '#7B84CE', '#F48973'];
-      for (let i = 0; i < 36; i++) {
-        const piece = document.createElement('div');
-        piece.className = 'confetti-piece rounded-xs';
-        piece.style.left = `${Math.random() * 100}vw`;
-        piece.style.width = `${6 + Math.random() * 6}px`;
-        piece.style.height = `${8 + Math.random() * 8}px`;
-        piece.style.backgroundColor = colors[i % colors.length];
-        piece.style.animationDuration = `${1.8 + Math.random() * 1.4}s`;
-        document.body.appendChild(piece);
-        setTimeout(() => {
-          piece.remove();
-        }, 3300);
-      }
-    }
-
-    // ================= INITIALIZATION =================
-    window.onload = function () {
-      loadLocalProgress();
-      initRoomCode();
-      renderAllCheckpoints();
-      connectRealtimeSync();
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.getVoices();
-      }
-    };
   </script>
 </body>
 </html>
