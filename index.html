@@ -250,6 +250,14 @@
     <div class="bg-white rounded-[28px] w-full max-w-xs p-6 space-y-4">
       <h3 class="text-sm font-extrabold text-[#2C3E50]">Mã phòng / 房間代碼 (6 số)</h3>
       <input id="roomCodeInput" type="text" maxlength="6" inputmode="numeric" class="w-full bg-[#F4F9FD] border border-[#E3EFF8] rounded-2xl px-4 py-3 text-center text-lg font-black tracking-widest text-[#2C3E50] focus:outline-none focus:border-[#45B6FE]" />
+      <div class="bg-[#F4F9FD] rounded-2xl p-3 space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[11px] font-extrabold text-slate-500">ntfy App 頻道</span>
+          <button onclick="copyNtfyTopic()" class="bg-white text-[#1E8FD5] text-[11px] font-extrabold px-2.5 py-1 rounded-full">複製頻道</button>
+        </div>
+        <div id="ntfyTopicPreview" class="text-xs font-black text-[#2C3E50] select-all">taipei-quest-521733</div>
+        <button onclick="sendTestNotification()" class="w-full py-2 rounded-full bg-[#E6F8F7] text-[#1A948E] text-xs font-extrabold">🔔 發送測試通知到手機</button>
+      </div>
       <div class="flex gap-2.5">
         <button onclick="closeRoomCodeModal()" class="flex-1 py-2.5 rounded-full bg-slate-100 text-slate-600 text-xs font-extrabold">Hủy</button>
         <button onclick="saveCustomRoomCode()" class="flex-1 py-2.5 rounded-full bg-[#45B6FE] text-white text-xs font-extrabold">Lưu / 儲存</button>
@@ -543,21 +551,72 @@
     let timerIntervals = { outbound: null, inbound: null };
     let ntfyEventSource = null;
     let toastTimeout = null;
+    let lastSentEvent = { text: '', time: 0 };
 
     function init() {
       loadSavedState();
       initRoomCode();
+      startNtfyStream();
       renderAll();
+    }
+
+    function initRoomCode() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlRoom = params.get('room');
+        const urlDir = params.get('dir');
+        const savedRoom = localStorage.getItem('taipei_quest_room');
+
+        if (urlRoom && /^\d{6}$/.test(urlRoom)) {
+          state.roomCode = urlRoom;
+          state.notifyEnabled = true;
+          localStorage.setItem('taipei_quest_room', urlRoom);
+        } else if (savedRoom && /^\d{6}$/.test(savedRoom)) {
+          state.roomCode = savedRoom;
+        }
+
+        if (urlDir === 'outbound' || urlDir === 'inbound') {
+          state.direction = urlDir;
+        }
+        syncUrlSilently();
+      } catch (e) {}
+    }
+
+    function syncUrlSilently() {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('room', state.roomCode);
+        url.searchParams.set('dir', state.direction);
+        window.history.replaceState({}, '', url.toString());
+      } catch (e) {}
     }
 
     function showToast(msg) {
       const banner = document.getElementById('toastBanner');
-      const text = document.getElementById('toastText');
-      if (!banner || !text) return;
-      text.textContent = msg;
+      const textEl = document.getElementById('toastText');
+      if (!banner || !textEl) return;
+      textEl.textContent = msg;
       banner.classList.remove('hidden');
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => banner.classList.add('hidden'), 2600);
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 2800);
+    }
+
+    function copyShareLink() {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('room', state.roomCode);
+        url.searchParams.set('dir', state.direction);
+        const shareUrl = url.toString();
+        const tempInput = document.createElement('input');
+        tempInput.value = shareUrl;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        showToast(state.lang === 'vi' ? `Đã chép link phòng #${state.roomCode}` : `已複製專屬連結 (#${state.roomCode})`);
+      } catch (e) {}
     }
 
     function loadSavedState() {
@@ -568,6 +627,7 @@
           if (parsed.completed) state.completed = parsed.completed;
           if (parsed.lang) state.lang = parsed.lang;
           if (parsed.direction) state.direction = parsed.direction;
+          if (typeof parsed.notifyEnabled === 'boolean') state.notifyEnabled = parsed.notifyEnabled;
         }
       } catch (e) {}
     }
@@ -577,53 +637,59 @@
         localStorage.setItem('taipei_quest_v4', JSON.stringify({
           completed: state.completed,
           lang: state.lang,
-          direction: state.direction
+          direction: state.direction,
+          notifyEnabled: state.notifyEnabled
         }));
       } catch (e) {}
     }
 
-    function initRoomCode() {
+    function playChime() {
       try {
-        const params = new URLSearchParams(window.location.search);
-        const urlRoom = params.get('room');
-        const urlDir = params.get('dir');
-        if (urlDir === 'inbound' || urlDir === 'outbound') {
-          state.direction = urlDir;
-        }
-        if (urlRoom && /^\d{6}$/.test(urlRoom)) {
-          state.roomCode = urlRoom;
-          localStorage.setItem('taipei_quest_room', urlRoom);
-        } else {
-          const storedRoom = localStorage.getItem('taipei_quest_room');
-          if (storedRoom && /^\d{6}$/.test(storedRoom)) {
-            state.roomCode = storedRoom;
-          } else {
-            state.roomCode = String(Math.floor(100000 + Math.random() * 900000));
-            localStorage.setItem('taipei_quest_room', state.roomCode);
-          }
-          syncUrlSilently();
-        }
-      } catch (e) {}
-    }
-
-    function syncUrlSilently() {
-      try {
-        if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
-          const url = new URL(window.location.href);
-          url.searchParams.set('room', state.roomCode);
-          url.searchParams.set('dir', state.direction);
-          window.history.replaceState({}, '', url.toString());
-        }
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+        [587.33, 880].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.12);
+          gain.gain.setValueAtTime(0.12, now + i * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.12);
+          osc.stop(now + i * 0.12 + 0.36);
+        });
       } catch (e) {}
     }
 
     function openRoomCodeModal() {
       document.getElementById('roomCodeInput').value = state.roomCode;
+      const preview = document.getElementById('ntfyTopicPreview');
+      if (preview) preview.textContent = `taipei-quest-${state.roomCode}`;
       document.getElementById('roomModal').classList.remove('hidden');
     }
 
     function closeRoomCodeModal() {
       document.getElementById('roomModal').classList.add('hidden');
+    }
+
+    function copyNtfyTopic() {
+      const topic = `taipei-quest-${state.roomCode}`;
+      const tempInput = document.createElement('input');
+      tempInput.value = topic;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      try { document.execCommand('copy'); } catch (err) {}
+      document.body.removeChild(tempInput);
+      showToast(`已複製頻道：${topic}`);
+    }
+
+    function sendTestNotification() {
+      publishRoomEvent(`🔔 測試通知成功！房間 #${state.roomCode} 已連線`);
+      playChime();
+      showToast('已發送測試通知，請確認手機是否響鈴');
     }
 
     function saveCustomRoomCode() {
@@ -632,7 +698,7 @@
         state.roomCode = val;
         try { localStorage.setItem('taipei_quest_room', val); } catch (e) {}
         syncUrlSilently();
-        if (state.notifyEnabled) startNtfyStream();
+        startNtfyStream();
         closeRoomCodeModal();
         renderAll();
         showToast(state.lang === 'vi' ? `Đã đổi mã phòng #${val}` : `已切換至房間 #${val}`);
@@ -641,42 +707,13 @@
       }
     }
 
-    function copyShareLink() {
-      let shareUrl = '';
-      try {
-        if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
-          const url = new URL(window.location.href);
-          url.searchParams.set('room', state.roomCode);
-          url.searchParams.set('dir', state.direction);
-          shareUrl = url.toString();
-        } else {
-          shareUrl = `https://amberyehhh.github.io/taipei-guide/?room=${state.roomCode}&dir=${state.direction}`;
-        }
-      } catch (e) {
-        shareUrl = `https://amberyehhh.github.io/taipei-guide/?room=${state.roomCode}&dir=${state.direction}`;
-      }
-
-      const tempInput = document.createElement('input');
-      tempInput.value = shareUrl;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      try { document.execCommand('copy'); } catch (err) {}
-      document.body.removeChild(tempInput);
-
-      showToast(state.lang === 'vi' ? `Đã chép link phòng #${state.roomCode}` : `已複製房間 #${state.roomCode} 連結`);
-    }
-
     function toggleNotifications() {
       state.notifyEnabled = !state.notifyEnabled;
+      saveState();
       if (state.notifyEnabled) {
         startNtfyStream();
         playChime();
         showToast(state.lang === 'vi' ? `Đã bật thông báo phòng #${state.roomCode}` : `已開啟房間 #${state.roomCode} 同步通知`);
-      } else {
-        if (ntfyEventSource) {
-          ntfyEventSource.close();
-          ntfyEventSource = null;
-        }
       }
       renderAll();
     }
@@ -689,8 +726,11 @@
           try {
             const payload = JSON.parse(event.data);
             if (payload.message) {
-              playChime();
-              showToast(`🔔 ${payload.message}`);
+              const isSelfEcho = payload.message === lastSentEvent.text && (Date.now() - lastSentEvent.time < 4000);
+              if (!isSelfEcho) {
+                playChime();
+                showToast(`🔔 ${payload.message}`);
+              }
             }
           } catch (err) {}
         };
@@ -698,64 +738,45 @@
     }
 
     function publishRoomEvent(text) {
-      if (!state.notifyEnabled) return;
+      lastSentEvent = { text, time: Date.now() };
       try {
         fetch(`https://ntfy.sh/taipei-quest-${state.roomCode}`, {
           method: 'POST',
+          headers: { 'Title': 'Taiwan Transport Guide' },
           body: text
         }).catch(() => {});
       } catch (e) {}
     }
 
-    function playChime() {
+    function speakChinese(text, btnEl) {
+      if (btnEl) {
+        document.querySelectorAll('.tts-active').forEach(el => el.classList.remove('tts-active'));
+        btnEl.classList.add('tts-active');
+        setTimeout(() => btnEl.classList.remove('tts-active'), 1600);
+      }
       try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.18);
-        gain.gain.setValueAtTime(0.15, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.45);
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.lang = 'zh-TW';
+          utter.rate = 0.92;
+          window.speechSynthesis.speak(utter);
+        }
       } catch (e) {}
     }
 
-    function speakChinese(zhText, btnEl) {
-      if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      document.querySelectorAll('.tts-active').forEach(el => el.classList.remove('tts-active'));
-
-      const utterance = new SpeechSynthesisUtterance(zhText);
-      utterance.lang = 'zh-TW';
-      utterance.rate = 0.88;
-
-      if (btnEl) {
-        btnEl.classList.add('tts-active');
-        utterance.onend = () => btnEl.classList.remove('tts-active');
-        utterance.onerror = () => btnEl.classList.remove('tts-active');
-      }
-      window.speechSynthesis.speak(utterance);
-    }
-
-    function playStepPhrase(stepIdx, phraseIdx, btnEl, openModalAfter = false) {
+    function playStepPhrase(stepIdx, pIdx, btnEl, showStaffBadge = false) {
       const step = JOURNEY_DATA[state.direction].steps[stepIdx];
-      if (!step || !step.phrases || !step.phrases[phraseIdx]) return;
-      const p = step.phrases[phraseIdx];
+      if (!step || !step.phrases || !step.phrases[pIdx]) return;
+      const p = step.phrases[pIdx];
       speakChinese(p.zh, btnEl);
-      if (openModalAfter) {
-        openFlashcardModal(p.zh, p.vi, true);
-      }
+      openFlashcardModal(p.zh, p.vi, showStaffBadge);
     }
 
-    function playThsrPhrase(stepIdx, key, btnEl) {
+    function playThsrPhrase(stepIdx, phraseKey, btnEl) {
       const step = JOURNEY_DATA[state.direction].steps[stepIdx];
-      if (!step || !step[key]) return;
-      const p = step[key];
+      if (!step || !step[phraseKey]) return;
+      const p = step[phraseKey];
       speakChinese(p.zh, btnEl);
       openFlashcardModal(p.zh, p.vi, false);
     }
@@ -794,6 +815,7 @@
 
     function openSosFlashcard() {
       speakChinese(SOS_PHRASE.zh, null);
+      publishRoomEvent('🆘 弟弟按下了 SOS 求助字卡！');
       openFlashcardModal(SOS_PHRASE.zh, SOS_PHRASE.vi, true);
     }
 
