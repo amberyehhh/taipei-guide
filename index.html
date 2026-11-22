@@ -251,12 +251,9 @@
       <h3 class="text-sm font-extrabold text-[#2C3E50]">Mã phòng / 房間代碼 (6 số)</h3>
       <input id="roomCodeInput" type="text" maxlength="6" inputmode="numeric" class="w-full bg-[#F4F9FD] border border-[#E3EFF8] rounded-2xl px-4 py-3 text-center text-lg font-black tracking-widest text-[#2C3E50] focus:outline-none focus:border-[#45B6FE]" />
       <div class="bg-[#F4F9FD] rounded-2xl p-3 space-y-2">
-        <div class="flex items-center justify-between gap-2">
-          <span class="text-[11px] font-extrabold text-slate-500">ntfy App 頻道</span>
-          <button onclick="copyNtfyTopic()" class="bg-white text-[#1E8FD5] text-[11px] font-extrabold px-2.5 py-1 rounded-full">複製頻道</button>
-        </div>
-        <div id="ntfyTopicPreview" class="text-xs font-black text-[#2C3E50] select-all">taipei-quest-521733</div>
-        <button onclick="sendTestNotification()" class="w-full py-2 rounded-full bg-[#E6F8F7] text-[#1A948E] text-xs font-extrabold">🔔 發送測試通知到手機</button>
+        <div class="text-[11px] font-extrabold text-[#1E8FD5]">免下載 App・瀏覽器直接通知</div>
+        <p class="text-[11px] font-semibold text-slate-500 leading-relaxed">打開網頁並點右上角「開啟通知」即可響鈴＋震動；解鎖手機切回網頁也會自動補抓最新進度。</p>
+        <button onclick="sendTestNotification()" class="w-full py-2.5 rounded-full bg-[#E6F8F7] text-[#1A948E] text-xs font-extrabold">🔔 發送測試通知（響鈴＋震動）</button>
       </div>
       <div class="flex gap-2.5">
         <button onclick="closeRoomCodeModal()" class="flex-1 py-2.5 rounded-full bg-slate-100 text-slate-600 text-xs font-extrabold">Hủy</button>
@@ -552,11 +549,20 @@
     let ntfyEventSource = null;
     let toastTimeout = null;
     let lastSentEvent = { text: '', time: 0 };
+    const seenEventIds = new Set();
 
+    // Initialize app state, room stream, and tab-visibility catch-up sync
     function init() {
       loadSavedState();
       initRoomCode();
       startNtfyStream();
+      fetchMissedEvents();
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          startNtfyStream();
+          fetchMissedEvents();
+        }
+      });
       renderAll();
     }
 
@@ -666,8 +672,6 @@
 
     function openRoomCodeModal() {
       document.getElementById('roomCodeInput').value = state.roomCode;
-      const preview = document.getElementById('ntfyTopicPreview');
-      if (preview) preview.textContent = `taipei-quest-${state.roomCode}`;
       document.getElementById('roomModal').classList.remove('hidden');
     }
 
@@ -675,47 +679,130 @@
       document.getElementById('roomModal').classList.add('hidden');
     }
 
-    function copyNtfyTopic() {
-      const topic = `taipei-quest-${state.roomCode}`;
-      const tempInput = document.createElement('input');
-      tempInput.value = topic;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      try { document.execCommand('copy'); } catch (err) {}
-      document.body.removeChild(tempInput);
-      showToast(`已複製頻道：${topic}`);
-    }
-
+    // Trigger test alert with chime, vibration, and system browser banner
     function sendTestNotification() {
-      publishRoomEvent(`🔔 測試通知成功！房間 #${state.roomCode} 已連線`);
-      playChime();
-      showToast('已發送測試通知，請確認手機是否響鈴');
-    }
-
-    function saveCustomRoomCode() {
-      const val = document.getElementById('roomCodeInput').value.trim();
-      if (/^\d{6}$/.test(val)) {
-        state.roomCode = val;
-        try { localStorage.setItem('taipei_quest_room', val); } catch (e) {}
-        syncUrlSilently();
-        startNtfyStream();
-        closeRoomCodeModal();
-        renderAll();
-        showToast(state.lang === 'vi' ? `Đã đổi mã phòng #${val}` : `已切換至房間 #${val}`);
-      } else {
-        showToast(state.lang === 'vi' ? 'Vui lòng nhập đúng 6 chữ số' : '請輸入 6 位數字房間代碼');
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().catch(() => {});
       }
+      publishRoomEvent(`🔔 測試通知成功！房間 #${state.roomCode} 已連線`);
+      triggerBrowserNotification(`測試通知成功！房間 #${state.roomCode} 已連線`);
     }
 
+    // Validate and apply custom 6-digit room code
+    function saveCustomRoomCode() {
+      const inputEl = document.getElementById('roomCodeInput');
+      const val = inputEl ? inputEl.value.trim() : '';
+      if (!/^\d{6}$/.test(val)) {
+        showToast(state.lang === 'vi' ? 'Vui lòng nhập đúng 6 chữ số' : '請輸入 6 位數字房間代碼');
+        return;
+      }
+      state.roomCode = val;
+      seenEventIds.clear();
+      try {
+        localStorage.setItem('taipei_quest_room', val);
+      } catch (e) {}
+      syncUrlSilently();
+      startNtfyStream();
+      fetchMissedEvents();
+      closeRoomCodeModal();
+      renderAll();
+      showToast(state.lang === 'vi' ? `Đã đổi sang phòng #${val}` : `已切換至房間 #${val}`);
+    }
+
+    // Toggle browser notifications and request native system notification permission
     function toggleNotifications() {
       state.notifyEnabled = !state.notifyEnabled;
       saveState();
       if (state.notifyEnabled) {
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission().catch(() => {});
+        }
         startNtfyStream();
+        fetchMissedEvents();
         playChime();
-        showToast(state.lang === 'vi' ? `Đã bật thông báo phòng #${state.roomCode}` : `已開啟房間 #${state.roomCode} 同步通知`);
+        if (navigator.vibrate) navigator.vibrate(200);
+        showToast(state.lang === 'vi' ? `Đã bật thông báo phòng #${state.roomCode}` : `已開啟房間 #${state.roomCode} 瀏覽器通知`);
       }
       renderAll();
+    }
+
+    // Play chime, vibrate phone, show banner, and fire native browser notification
+    function triggerBrowserNotification(msg) {
+      playChime();
+      try {
+        if (navigator.vibrate) navigator.vibrate([250, 120, 250]);
+      } catch (e) {}
+      showToast(`🔔 ${msg}`);
+      try {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('台灣搭車進度通知', {
+            body: msg,
+            tag: 'taipei-quest-alert'
+          });
+        }
+      } catch (e) {}
+    }
+
+    // Sync step completion badges when receiving check-in messages from brother's phone
+    function syncStepFromMessage(msg) {
+      if (!msg || !msg.startsWith('✅')) return false;
+      let changed = false;
+      ['outbound', 'inbound'].forEach(dir => {
+        JOURNEY_DATA[dir].steps.forEach(step => {
+          if (msg.includes(step.title) && !state.completed[dir].includes(step.id)) {
+            state.completed[dir].push(step.id);
+            state.completed[dir].sort((a, b) => a - b);
+            changed = true;
+          }
+        });
+      });
+      if (changed) {
+        saveState();
+        renderAll();
+      }
+      return changed;
+    }
+
+    // Process incoming SSE or catch-up poll events without duplicates
+    function handleIncomingPayload(payload, isCatchUp = false) {
+      if (!payload || !payload.message) return;
+      if (payload.id) {
+        if (seenEventIds.has(payload.id)) return;
+        seenEventIds.add(payload.id);
+      }
+      const isSelfEcho = payload.message === lastSentEvent.text && (Date.now() - lastSentEvent.time < 4500);
+      if (isSelfEcho) return;
+
+      syncStepFromMessage(payload.message);
+
+      if (state.notifyEnabled || payload.message.startsWith('🆘')) {
+        if (!isCatchUp) {
+          triggerBrowserNotification(payload.message);
+        } else {
+          showToast(`🔔 ${payload.message}`);
+        }
+      }
+    }
+
+    // Fetch recent events when unlocking phone or switching back to browser
+    function fetchMissedEvents() {
+      try {
+        fetch(`https://ntfy.sh/taipei-quest-${state.roomCode}/json?poll=1&since=2h`)
+          .then(res => res.text())
+          .then(text => {
+            const lines = text.trim().split('\n').filter(Boolean);
+            lines.forEach((line, idx) => {
+              try {
+                const payload = JSON.parse(line);
+                if (payload.event === 'message') {
+                  const isLatest = idx === lines.length - 1;
+                  handleIncomingPayload(payload, !isLatest);
+                }
+              } catch (e) {}
+            });
+          })
+          .catch(() => {});
+      } catch (e) {}
     }
 
     function startNtfyStream() {
@@ -725,13 +812,7 @@
         ntfyEventSource.onmessage = (event) => {
           try {
             const payload = JSON.parse(event.data);
-            if (payload.message) {
-              const isSelfEcho = payload.message === lastSentEvent.text && (Date.now() - lastSentEvent.time < 4000);
-              if (!isSelfEcho) {
-                playChime();
-                showToast(`🔔 ${payload.message}`);
-              }
-            }
+            handleIncomingPayload(payload, false);
           } catch (err) {}
         };
       } catch (e) {}
